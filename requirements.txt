@@ -1,0 +1,7 @@
+elasticsearch==7.13.1
+fastapi
+pydantic
+dynaconf
+uvicorn
+loguru
+click

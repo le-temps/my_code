@@ -1,0 +1,128 @@
+PUT /squint_domain_snapshot
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "meta" : {
+          "properties" : {
+            "snapshot_version" : {
+              "type" : "keyword"
+            },
+            "classifier_version" : {
+              "type" : "keyword"
+            },
+            "location" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "request" : {
+          "properties" : {
+            "scheme" : {
+              "type" : "keyword"
+            },
+            "domain" : {
+              "type" : "keyword"
+            },
+            "main_domain" : {
+              "type" : "keyword"
+            },
+            "request_url" : {
+              "type" : "text"
+            }
+          }
+        },
+        "response" : {
+          "properties" : {
+            "remote_address" : {
+              "properties" : {
+                "ip" : {
+                  "type" : "keyword"
+                },
+                "port" : {
+                  "type" : "integer"
+                }
+              }
+            },
+            "response_url" : {
+              "type" : "text"
+            },
+            "snapshot_url" : {
+              "type" : "text"
+            },
+            "favicon" : {
+              "properties" : {
+                "img_url" : {
+                  "type" : "text"
+                },
+                "md5" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "frame" : {
+              "properties" : {
+                "frame_url" : {
+                  "type" : "text"
+                },
+                "html_url" : {
+                  "type" : "text"
+                },
+                "icp" : {
+                  "type" : "keyword"
+                },
+                "keywords" : {
+                  "type" : "text"
+                },
+                "description" : {
+                  "type" : "text"
+                },
+                "text_content_url" : {
+                  "type" : "text"
+                },
+                "title" : {
+                  "type" : "text"
+                },
+                "child_frames" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "external_urls" : {
+              "type" : "text"
+            },
+            "cert_hash" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "classification" : {
+          "properties" : {
+            "type" : {
+              "type" : "keyword"
+            },
+            "probability" : {
+              "type" : "float"
+            }
+          }
+        },
+        "collected_timestamp": {
+          "type": "keyword"
+        },
+        "insert_raw_table_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        }
+      }
+    }
+}

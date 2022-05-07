@@ -1,0 +1,92 @@
+PUT /squint_domain_rr
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "A" : {
+          "properties" : {
+            "accuracy" : {
+              "type" : "keyword"
+            },
+            "areacode" : {
+              "type" : "keyword"
+            },
+            "asnumber" : {
+              "type" : "keyword"
+            },
+            "continent" : {
+              "type" : "keyword"
+            },
+            "country" : {
+              "type" : "keyword"
+            },
+            "id" : {
+              "type" : "keyword"
+            },
+            "ip" : {
+              "type" : "keyword"
+            },
+            "isp" : {
+              "type" : "keyword"
+            },
+            "city" : {
+              "type" : "keyword"
+            },
+            "district" : {
+              "type" : "keyword"
+            },
+            "latbd" : {
+              "type" : "float"
+            },
+            "latwgs" : {
+              "type" : "float"
+            },
+            "lngbd" : {
+              "type" : "float"
+            },
+            "lngwgs" : {
+              "type" : "float"
+            },
+            "prov" : {
+              "type" : "keyword"
+            },
+            "radius" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "AAAA" : {
+          "type" : "keyword"
+        },
+        "MX" : {
+          "type" : "keyword"
+        },
+        "CNAME" : {
+          "type" : "keyword"
+        },
+        "NS" : {
+          "type" : "keyword"
+        },
+        "TXT" : {
+          "type" : "keyword"
+        },
+        "domain" : {
+          "type" : "keyword"
+        },
+        "insert_raw_table_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        }
+      }
+    }
+}

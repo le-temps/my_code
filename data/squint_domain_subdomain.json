@@ -1,0 +1,31 @@
+PUT /squint_domain_subdomain
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "main_domain" : {
+          "type" : "keyword"
+        },
+        "subdomains" : {
+          "type" : "keyword"
+        },
+        "collected_timestamp" : {
+          "type" : "keyword"
+        },
+        "insert_raw_table_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        }
+      }
+    }
+}

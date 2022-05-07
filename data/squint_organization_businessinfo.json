@@ -1,0 +1,103 @@
+PUT /squint_organization_businessinfo
+{
+	"settings":{
+		"number_of_shards" : "12",
+		"number_of_replicas" : "0",
+		"analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+	},
+	"mappings" : {
+      "properties" : {
+        "name" : {
+          "type" : "keyword"
+        },
+        "business_status" : {
+          "type" : "keyword"
+        },
+        "legal_person" : {
+          "type" : "keyword"
+        },
+        "registered_capital" : {
+          "type" : "keyword"
+        },
+        "paid_up_capital" : {
+          "type" : "keyword"
+        },
+        "create_date" : {
+          "type" : "keyword"
+        },
+        "approval_date" : {
+          "type" : "keyword"
+        },
+        "business_period" : {
+          "type" : "keyword"
+        },
+        "province" : {
+          "type" : "keyword"
+        },
+        "city" : {
+          "type" : "keyword"
+        },
+        "district" : {
+          "type" : "keyword"
+        },
+        "uniform_social_credit_code" : {
+          "type" : "keyword"
+        },
+        "taxpayer_identification_number" : {
+          "type" : "keyword"
+        },
+        "registration_number" : {
+          "type" : "keyword"
+        },
+        "organization_id" : {
+          "type" : "keyword"
+        },
+        "insured_number" : {
+          "type" : "keyword"
+        },
+        "type" : {
+          "type" : "keyword"
+        },
+        "industry" : {
+          "type" : "keyword"
+        },
+        "previous_name" : {
+          "type" : "keyword"
+        },
+        "registration_address" : {
+          "type" : "keyword"
+        },
+        "latest_report_address" : {
+          "type" : "keyword"
+        },
+        "website_url" : {
+          "type" : "keyword"
+        },
+        "phone" : {
+          "type" : "keyword"
+        },
+        "other_phone" : {
+          "type" : "keyword"
+        },
+        "email" : {
+          "type" : "keyword"
+        },
+        "other_email" : {
+          "type" : "keyword"
+        },
+        "business_range" : {
+          "type" : "keyword"
+        },
+        "insert_raw_table_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        }
+      }
+    }
+}

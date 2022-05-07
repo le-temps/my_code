@@ -1,0 +1,28 @@
+PUT /squint_ip_cert
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "ip" : {
+          "type" : "keyword"
+        },
+        "sha256" : {
+          "type" : "keyword"
+        },
+        "insert_raw_table_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        }
+      }
+    }
+}

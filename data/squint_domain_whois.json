@@ -1,0 +1,254 @@
+PUT /squint_domain_whois
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "domain" : {
+          "type" : "keyword"
+        },
+        "domain_info" : {
+          "properties" : {
+            "name" : {
+              "type" : "keyword"
+            },
+            "name_servers" : {
+              "type" : "keyword"
+            },
+            "status" : {
+              "type" : "keyword"
+            },
+            "dns_sec" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "registrant" : {
+          "properties" : {
+            "id" : {
+              "type" : "keyword"
+            },
+            "postal_code" : {
+              "type" : "keyword"
+            },
+            "phone_extension" : {
+              "type" : "keyword"
+            },
+            "fax" : {
+              "type" : "keyword"
+            },
+            "fax_extension" : {
+              "type" : "keyword"
+            },
+            "city" : {
+              "type" : "keyword"
+            },
+            "country" : {
+              "type" : "keyword"
+            },
+            "email" : {
+              "type" : "keyword"
+            },
+            "name" : {
+              "type" : "keyword"
+            },
+            "organization" : {
+              "type" : "keyword"
+            },
+            "phone" : {
+              "type" : "keyword"
+            },
+            "province" : {
+              "type" : "keyword"
+            },
+            "street" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "registrar" : {
+          "properties" : {
+            "email" : {
+              "type" : "keyword"
+            },
+            "name" : {
+              "type" : "keyword"
+            },
+            "phone" : {
+              "type" : "keyword"
+            },
+            "website" : {
+              "type" : "keyword"
+            },
+            "whois_servers" : {
+              "type" : "keyword"
+            },
+            "iana_id" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "registry" : {
+          "properties" : {
+            "domain_id" : {
+              "type" : "keyword"
+            },
+            "creation_time" : {
+              "type" : "keyword"
+            },
+            "expiration_time" : {
+              "type" : "keyword"
+            },
+            "updated_time" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "administrator" : {
+          "properties" : {
+            "id" : {
+              "type" : "keyword"
+            },
+            "postal_code" : {
+              "type" : "keyword"
+            },
+            "phone_extension" : {
+              "type" : "keyword"
+            },
+            "fax" : {
+              "type" : "keyword"
+            },
+            "fax_extension" : {
+              "type" : "keyword"
+            },
+            "city" : {
+              "type" : "keyword"
+            },
+            "country" : {
+              "type" : "keyword"
+            },
+            "email" : {
+              "type" : "keyword"
+            },
+            "name" : {
+              "type" : "keyword"
+            },
+            "organization" : {
+              "type" : "keyword"
+            },
+            "phone" : {
+              "type" : "keyword"
+            },
+            "province" : {
+              "type" : "keyword"
+            },
+            "street" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "technician" : {
+          "properties" : {
+            "id" : {
+              "type" : "keyword"
+            },
+            "postal_code" : {
+              "type" : "keyword"
+            },
+            "phone_extension" : {
+              "type" : "keyword"
+            },
+            "fax" : {
+              "type" : "keyword"
+            },
+            "fax_extension" : {
+              "type" : "keyword"
+            },
+            "city" : {
+              "type" : "keyword"
+            },
+            "country" : {
+              "type" : "keyword"
+            },
+            "email" : {
+              "type" : "keyword"
+            },
+            "name" : {
+              "type" : "keyword"
+            },
+            "organization" : {
+              "type" : "keyword"
+            },
+            "phone" : {
+              "type" : "keyword"
+            },
+            "province" : {
+              "type" : "keyword"
+            },
+            "street" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "billing" : {
+          "properties" : {
+            "id" : {
+              "type" : "keyword"
+            },
+            "postal_code" : {
+              "type" : "keyword"
+            },
+            "phone_extension" : {
+              "type" : "keyword"
+            },
+            "fax" : {
+              "type" : "keyword"
+            },
+            "fax_extension" : {
+              "type" : "keyword"
+            },
+            "city" : {
+              "type" : "keyword"
+            },
+            "country" : {
+              "type" : "keyword"
+            },
+            "email" : {
+              "type" : "keyword"
+            },
+            "name" : {
+              "type" : "keyword"
+            },
+            "organization" : {
+              "type" : "keyword"
+            },
+            "phone" : {
+              "type" : "keyword"
+            },
+            "province" : {
+              "type" : "keyword"
+            },
+            "street" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "collected_timestamp" : {
+          "type" : "keyword"
+        },
+        "insert_raw_table_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        }
+      }
+    }
+}

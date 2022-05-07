@@ -1,0 +1,52 @@
+PUT /squint_domain_icp
+{
+	"settings":{
+		"number_of_shards" : "12",
+		"number_of_replicas" : "0",
+		"analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+	},
+	"mappings" : {
+      "properties" : {
+        "collected_timestamp" : {
+          "type" : "keyword"
+        },
+        "domain" : {
+          "type" : "keyword"
+        },
+        "home_url" : {
+          "type" : "keyword"
+        },
+        "limit_access" : {
+          "type" : "keyword"
+        },
+        "main_licence" : {
+          "type" : "keyword"
+        },
+        "service_licence" : {
+          "type" : "keyword"
+        },
+        "service_name" : {
+          "type" : "keyword"
+        },
+        "unit_name" : {
+          "type" : "keyword"
+        },
+        "unit_type" : {
+          "type" : "keyword"
+        },
+        "update_record_time" : {
+          "type" : "keyword"
+        },
+        "insert_raw_table_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        }
+      }
+    }
+}

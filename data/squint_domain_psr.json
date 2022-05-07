@@ -1,0 +1,55 @@
+PUT /squint_domain_psr
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "record_id" : {
+          "type" : "keyword"
+        },
+        "domain" : {
+          "type" : "keyword"
+        },
+        "unit_type" : {
+          "type" : "keyword"
+        },
+        "unit_name" : {
+          "type" : "keyword"
+        },
+        "website_main_domain" : {
+          "type" : "keyword"
+        },
+        "record_time" : {
+          "type" : "keyword"
+        },
+        "collected_timestamp" : {
+          "type" : "keyword"
+        },
+        "record_bureau" : {
+          "type" : "keyword"
+        },
+        "website_second_domain" : {
+          "type" : "keyword"
+        },
+        "website_name" : {
+          "type" : "keyword"
+        },
+        "website_type" : {
+          "type" : "keyword"
+        },
+        "insert_raw_table_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        }
+      }
+    }
+}
