@@ -17,6 +17,10 @@ def new_organization_wide_table_record():
         "tags":{}
     }
 
+def delete_name_dict(dict, name):
+    dict.pop(name)
+    return dict
+
 def organization_update(name, type):
     if type not in ORGANIZATION_TYPE:
         logger.error("ERROR: organization_update input arg type not in ORGANIZATION_TYPE(organization_businessinfo, organization_domain).")
@@ -29,7 +33,7 @@ def organization_update(name, type):
                 raise Exception(f"ERROR: organization_update cannot find record(type:{type}, name:{name})")
             update_data.update({
                     "name": res["hits"]["hits"][0]["_source"]["name"],
-                    "info": res["hits"]["hits"][0]["_source"],
+                    "info": delete_name_dict(res["hits"]["hits"][0]["_source"], "name"),
                     "create_timestamp": res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"],
                     "update_timestamp": res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"]
                 })
@@ -51,7 +55,7 @@ def organization_update(name, type):
             if len(res["hits"]["hits"]) == 0:
                 raise Exception(f"ERROR: organization_update cannot find record(type:{type}, name:{name})")
             update_data.update({
-                    "info": res["hits"]["hits"][0]["_source"],
+                    "info": delete_name_dict(res["hits"]["hits"][0]["_source"], "name"),
                     "update_timestamp": time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
                 })
         elif type == "organization_domain":
