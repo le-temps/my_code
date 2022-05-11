@@ -8,5 +8,5 @@ Squint检索系统的数据处理模块，实现将原始数据落盘数据库�
 {
     "source_index_type": "organization_businessinfo",
     "destination_index_type": "organization",
-    "name": "xxxx公司"
+    "value": "xxxx公司"
 }

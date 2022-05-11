@@ -2,7 +2,7 @@ import json
 from multiprocessing import Process
 from utils.logger import logger
 
-from service.db import redis_queue
+from service.db.redis import redis_queue
 from worker.ip import ip_update
 from worker.domain import domain_update
 from worker.organization import organization_update
@@ -18,7 +18,7 @@ def worker():
     while True:
         task = json.loads(redis_queue.consume())
         try:
-            update_func[task["destination_index_type"]](task["name"], task["source_index_type"])
+            update_func[task["destination_index_type"]](task["value"], task["source_index_type"])
             redis_queue.finish(task)
         except Exception as e:
             logger.error(traceback.format_exc())
