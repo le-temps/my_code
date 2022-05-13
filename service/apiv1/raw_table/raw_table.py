@@ -29,11 +29,20 @@ def check_input_type(type):
     else:
         return False
 
-INPUT_DATA_VALUE_MAPPING = {
-    "organization": "name",
-    "domain": "domain",
-    "ip": "ip"
-}
+VALUE_NAME_MAPPING_DICT = {}
+for i, e in enumerate(settings.raw_table.type):
+    VALUE_NAME_MAPPING_DICT[e] = settings.raw_table.value_name[i]
+
+def get_task_value(data, value_name):
+    try:
+        value_names = value_name.split(".")
+        for e in value_names:
+            data = data[e]
+        if (type(data) is list) or (type(data) is dict):
+            raise Exception("Get task value error: result is still a list or dict.")
+        return data
+    except Exception as e:
+        raise Exception(f"Input data struct error: not include field: {value_name}")
 
 @router.post("/api/v1/raw_table", response_model=InputResponse, tags=["raw_table"])
 async def insert_data_to_raw_table(input_data: InputData, response: Response, token: Optional[str]=Header(None)):
@@ -46,7 +55,7 @@ async def insert_data_to_raw_table(input_data: InputData, response: Response, to
             response.status_code=400
             return InputResponse(status=400, message="Input data not correct.")
         es.bulk_insert(settings.elasticsearch.index_prefix + input_data.type, input_data.data, {"insert_raw_table_timestamp": time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))})
-        redis_queue.produce(*[json.dumps({"source_index_type": input_data.type, "destination_index_type": input_data.type.split("_")[0], "value":e[INPUT_DATA_VALUE_MAPPING[input_data.type.split("_")[0]]]}) for e in input_data.data])
+        redis_queue.produce(*[json.dumps({"source_index_type": input_data.type, "destination_index_type": input_data.type.split("_")[0], "value": get_task_value(e, VALUE_NAME_MAPPING_DICT[type])}) for e in input_data.data])
         if input_data.type == "domain_rr":
             ips = []
             for data in input_data.data:

@@ -68,7 +68,7 @@ def update_domain_rr(domain, exist_record):
         )
 
 def update_domain_subdomain(domain, exist_record):
-    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_subdomain", f"domain:{domain}", "insert_raw_table_timestamp")
+    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_subdomain", f"main_domain:{domain}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_subdomain, domain:{domain})")
     return assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record).update(
@@ -92,7 +92,7 @@ def update_domain_web(domain, exist_record):
         )
 
 def update_domain_snapshot(domain, exist_record):
-    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_snapshot", f"domain:{domain}", "insert_raw_table_timestamp")
+    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_snapshot", f"request.domain:{domain}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_snapshot, domain:{domain})")
     remote_address_ip = res["hits"]["hits"][0]["response"]["remote_address"]["ip"]

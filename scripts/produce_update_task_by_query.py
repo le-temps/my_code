@@ -25,3 +25,4 @@ if __name__ == "__main__":
     parser.add_argument('-q', help='elasticsearch query_string输入.')
     parser.add_argument('-t', help='raw_table type.')
     args = parser.parse_args()
+    produce_update_task_by_query(args.t, args.q)

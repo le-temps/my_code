@@ -1,5 +1,5 @@
 from elasticsearch import Elasticsearch, helpers
-from elasticsearch.helpers import bulk, scan
+from elasticsearch.helpers import bulk, scan, reindex
 import traceback
 
 from utils.config import settings
@@ -9,6 +9,9 @@ class ElasticsearchConn:
 
     def __init__(self, url, auth):
         self.es = Elasticsearch([url], http_auth=auth)
+
+    def get_instance(self):
+        return self.es
 
     def search(self, index, query_body):
         try:
@@ -26,9 +29,12 @@ class ElasticsearchConn:
     def search_latest_by_query_string(self, index, query_string, timestamp_field):
         return self.search(index=index, body={"size":1, "query":{"query_string":{"query":query_string}}, "sort":{timestamp_field:{"order":"desc"}}})
 
-    def insert(self, index, insert_body):
+    def count_by_query_string(self, index, query_string):
+        return es.count(index=index, body={"query":{"query_string":{"query":query_string}}})["count"]
+
+    def insert(self, index, id, insert_body):
         try:
-            es.index(index=index, body=insert_body)
+            es.index(index=index, id=id, body=insert_body)
         except Exception as e:
             logger.error(traceback.format_exc())
             logger.error(e)
@@ -48,7 +54,10 @@ class ElasticsearchConn:
 
     def update(self, index, id, update_body):
         try:
-            es.update(index=index, doc_type='_doc', id=id, body=update_body)
+            if id is not None:
+                self.es.update(index=index, doc_type='_doc', id=id, body={"doc":update_body})
+            else:
+                self.insert(index, None, update_body)
         except Exception as e:
             logger.error(traceback.format_exc())
             logger.error(e)
@@ -98,5 +107,11 @@ class ElasticsearchConn:
 
     def scan_by_query_string(self, index, query_string):
         return scan(client=self.es, index=index, body={"size":1, "query":{"query_string":{"query":query_string}}})
+
+    def create_index(self, index, body):
+        self.es.indices.create(index=index, body=body)
+
+    def reindex(self, source_index, target_index):
+        reindex(client=self.es, source_index=source_index, target_index=target_index, target_client=self.es)
 
 es = ElasticsearchConn(f"{settings.elasticsearch.host}:{settings.elasticsearch.port}", (f"{settings.elasticsearch_auth.user}", f"{settings.elasticsearch_auth.password}"))

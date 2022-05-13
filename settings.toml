@@ -1,29 +1,30 @@
 [basic]
-project_name="squint_data"
+project_name = "squint_data"
 
 [service]
-host="0.0.0.0"
-port=27000
+host = "0.0.0.0"
+port = 27000
 
 [elasticsearch]
-version="7.8.13"
-host="10.245.146.64"
-port=9200
-max_bulk_size=1000
-timeout=60
-index_prefix="squint_"
+version = "7.8.13"
+host = "10.245.146.64"
+port = 9200
+max_bulk_size = 1000
+timeout = 60
+index_prefix = "squint_"
 
 [redis]
-host="10.245.146.65"
-port=6379
-tasks_list_name="squint_data_tasks"
-distributed_list_name="squint_data_tasks_distributed"
-finished_list_name="squint_data_tasks_finshed"
+host = "10.245.146.65"
+port = 6379
+tasks_list_name = "squint_data_tasks"
+distributed_list_name = "squint_data_tasks_distributed"
+finished_list_name = "squint_data_tasks_finshed"
 
 [raw_table]
-type=["domain_icp", "domain_psr", "domain_rr", "domain_subdomain", "domain_whois", "domain_cert", "domain_web", "domain_snapshot", "ip_port", "ip_cert", "ip_ptr", "ip_protocol", "cert_raw", "organization_businessinfo", "organization_domain"]
+type = ["domain_icp", "domain_psr", "domain_rr", "domain_subdomain", "domain_whois", "domain_cert", "domain_web", "domain_snapshot", "ip_port", "ip_cert", "ip_ptr", "ip_protocol", "cert_raw", "organization_businessinfo", "organization_domain"]
+value_name = ["domain", "domain", "domain", "main_domain", "domain", "domain", "domain", "request.domain", "ip", "ip", "ip", "ip", "sha256", "name", "company"]
 
 [wide_table]
-domain_index="squint_domain"
-ip_index="squint_ip"
-organization_index="squint_organization"
+domain_index = "squint_domain"
+ip_index = "squint_ip"
+organization_index = "squint_organization"

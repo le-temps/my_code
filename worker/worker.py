@@ -10,7 +10,8 @@ from worker.organization import organization_update
 update_func = {
     "ip": ip_update,
     "domain": domain_update,
-    "organization": organization_update
+    "organization": organization_update,
+    "cert": cert_parse
 }
 
 def worker():

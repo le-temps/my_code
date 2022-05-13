@@ -35,7 +35,7 @@ def update_organization_businessinfo(organization, exist_record):
         )
 
 def update_organization_domain(organization, exist_record):
-    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "organization_domain", f"name:{organization}", "insert_raw_table_timestamp")
+    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "organization_domain", f"company:{organization}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: organization_update cannot find record(type:organization_domain, name:{organization})")
     return assamble_organization_update_data(organization, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record).update(
@@ -48,7 +48,7 @@ UPDARE_ORGANIZATION_FUNC = {
 }
 
 def organization_update_data(name, type):
-    if type not in ORGANIZATION_TYPE:
+    if type not in UPDARE_ORGANIZATION_FUNC:
         logger.error(f"ERROR: organization_update input arg type not in ORGANIZATION_TYPE({",".join(UPDARE_ORGANIZATION_FUNC.keys())}).")
     res = es.search_latest_by_query_string(ORGANIZATION_WIDE_TABLE_NAME, f"name:{name}", "update_timestamp")
     _id = None
