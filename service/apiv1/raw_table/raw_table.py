@@ -55,13 +55,13 @@ async def insert_data_to_raw_table(input_data: InputData, response: Response, to
             response.status_code=400
             return InputResponse(status=400, message="Input data not correct.")
         es.bulk_insert(settings.elasticsearch.index_prefix + input_data.type, input_data.data, {"insert_raw_table_timestamp": time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))})
-        redis_queue.produce(*[json.dumps({"source_index_type": input_data.type, "destination_index_type": input_data.type.split("_")[0], "value": get_task_value(e, VALUE_NAME_MAPPING_DICT[type])}) for e in input_data.data])
+        redis_queue.produce(*[json.dumps({"source_index_type": input_data.type, "destination_index_type": input_data.type.split("_")[0], "value": get_task_value(e, VALUE_NAME_MAPPING_DICT[type]), "try_num": 0}) for e in input_data.data])
         if input_data.type == "domain_rr":
             ips = []
             for data in input_data.data:
                 for a in data["A"]:
                     ips.append(a["ip"])
-            redis_queue.produce(*[json.dumps({"source_index_type": "ip_ptr", "destination_index_type":"ip", "value":ip}) for ip in ips])
+            redis_queue.produce(*[json.dumps({"source_index_type": "ip_ptr", "destination_index_type":"ip", "value":ip, "try_num": 0}) for ip in ips])
         return InputResponse(status=200, message="OK.")
     except Exception as e:
         logger.error(traceback.format_exc())

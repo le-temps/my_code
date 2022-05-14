@@ -1,4 +1,5 @@
 import redis
+import json
 import traceback
 
 from utils.config import settings
@@ -27,9 +28,19 @@ class RedisQueue:
 
     def finish(self, task):
         return self.redis.lrem(settings.redis.distributed_list_name, 1, task)
+        self.redis.lpush(settings.redis.finished_list_name, task)
+        logger.debug(f"redis_queue finish task: {task}")
 
     def reproduce(self, task):
         self.redis.lrem(settings.redis.distributed_list_name, 1, task)
+        task = json.loads(task)
+        if task["try_num"] > settings.redis.max_try_num:
+            self.redis.lpush(settings.redis.aborted_list_name, task)
+            logger.debug(f"redis_queue abort task: {task}")
+            return
+        else:
+            task["try_num"] += 1
+        task = json.dumps(task)
         self.produce(task)
         logger.warning(f"REPRODUCE TASK: {task}")
 

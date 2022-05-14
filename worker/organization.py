@@ -24,7 +24,7 @@ def assamble_organization_update_data(organization, insert_raw_table_timestamp, 
     if exist_record:
         return {"update_timestamp": time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}
     else:
-        return {"name":organization, "create_timestamp":insert_raw_table_timestamp, "update_timestamp":insert_raw_table_timestamp}
+        return {"organization":organization, "create_timestamp":insert_raw_table_timestamp, "update_timestamp":insert_raw_table_timestamp}
 
 def update_organization_businessinfo(organization, exist_record):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "organization_businessinfo", f"name:{organization}", "insert_raw_table_timestamp")
@@ -49,7 +49,7 @@ UPDARE_ORGANIZATION_FUNC = {
 
 def organization_update_data(name, type):
     if type not in UPDARE_ORGANIZATION_FUNC:
-        logger.error(f"ERROR: organization_update input arg type not in ORGANIZATION_TYPE({",".join(UPDARE_ORGANIZATION_FUNC.keys())}).")
+        logger.error(f"ERROR: organization_update input arg type not in ORGANIZATION_TYPE({','.join(UPDARE_ORGANIZATION_FUNC.keys())}).")
     res = es.search_latest_by_query_string(ORGANIZATION_WIDE_TABLE_NAME, f"name:{name}", "update_timestamp")
     _id = None
     if len(res["hits"]["hits"]) == 0:

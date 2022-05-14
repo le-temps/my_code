@@ -10,28 +10,43 @@ from utils.logger import logger
 
 router = APIRouter()
 
+#### wide_table search
+#TODO add wide_table search api
 
-##### wide_table organization detail search
-
-class DetailOrganizationResponse(BaseModel):
+##### wide_table detail
+class DetailResponse(BaseModel):
     status: str
     message: str
 
-
-@router.get("/api/v1/organization/{organization_name}", response_model=DetailOrganizationResponse, tags=["wide_table", "organization"])
-async def insert_data_to_raw_table(organization_name: str, response: Response, token: Optional[str]=Header(None)):
+def get_detail(type, value, response, token):
     if token != settings.service_auth.token:
         response.status_code=401
-        return DetailOrganizationResponse(status=401, message="Unauthorized request.")
+        return DetailResponse(status=401, message="Unauthorized request.")
     response.status_code=200
     try:
-        res = es.search_by_query_string(index=settings.wide_table.organization_index, query_string=f"name:{organization_name}")
+        res = es.search_by_query_string(index=settings.elasticsearch.index_prefix + value, query_string=f"{type}:{value}")
         if len(res["hits"]["hits"]) > 0:
-            return DetailOrganizationResponse(status=200, message=res["hits"]["hits"][0]["_source"])
+            return DetailResponse(status=200, message=res["hits"]["hits"][0]["_source"])
         else:
-            return DetailOrganizationResponse(status=200, message={})
+            return DetailResponse(status=200, message={})
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(e)
         response.status_code=500
-        return DetailOrganizationResponse(status=500, message=str(e))
+        return DetailResponse(status=500, message=str(e))
+
+@router.get("/api/v1/domain/{domain}", response_model=DetailResponse, tags=["wide_table", "domain"])
+async def get_domain_detail(domain: str, response: Response, token: Optional[str]=Header(None)):
+    return get_detail("domain", domain, response, token)
+
+@router.get("/api/v1/ip/{ip}", response_model=DetailResponse, tags=["wide_table", "ip"])
+async def get_ip_detail(ip: str, response: Response, token: Optional[str]=Header(None)):
+    return get_detail("ip", ip, response, token)
+
+@router.get("/api/v1/organization/{organization}", response_model=DetailResponse, tags=["wide_table", "organization"])
+async def get_organization_detail(organization: str, response: Response, token: Optional[str]=Header(None)):
+    return get_detail("organization", ip, response, token)
+
+@router.get("/api/v1/cert/{cert}", response_model=DetailResponse, tags=["wide_table", "cert"])
+async def get_cert_detail(cert: str, response: Response, token: Optional[str]=Header(None)):
+    return get_detail("cert", cert, response, token)

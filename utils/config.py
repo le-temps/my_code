@@ -6,27 +6,27 @@ settings = Dynaconf(
     validators=[
         Validator(
             'basic.project_name',
-            'service.host',
-            'service.port',
+            'service_auth.host',
+            'service_auth.port',
             'service_auth.token'
-            'elasticsearch.version',
-            'elasticsearch.host',
-            'elasticsearch.port',
+            'elasticsearch_auth.version',
+            'elasticsearch_auth.host',
+            'elasticsearch_auth.port',
             'elasticsearch_auth.user',
             'elasticsearch_auth.password',
             'elasticsearch.max_bulk_size',
             'elasticsearch.timeout',
             'elasticsearch.index_prefix',
             "raw_table.type",
-            "redis.host",
-            "redis.port",
+            "raw_table.value_name",
+            "redis_auth.host",
+            "redis_auth.port",
+            "redis_auth.password",
             "redis.tasks_list_name",
             "redis.distributed_list_name",
             "redis.finished_list_name",
-            "redis_auth.password",
-            "wide_table.domain_index",
-            "wide_table.ip_index",
-            "wide_table.organization_index"
+            "redis.aborted_list_name",
+            "redis.max_try_num"
         )
     ]
 )

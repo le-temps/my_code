@@ -132,7 +132,7 @@ UPDARE_DOMAIN_FUNC = {
 
 def domain_update(domain, type):
     if type not in UPDARE_DOMAIN_FUNC:
-        logger.error(f"ERROR: domain_update input arg type not in DOMAIN_TYPE({",".join(UPDARE_DOMAIN_FUNC.keys())}).")
+        logger.error(f"ERROR: domain_update input arg type not in DOMAIN_TYPE({','.join(UPDARE_DOMAIN_FUNC.keys())}).")
     res = es.search_latest_by_query_string(DOMAIN_WIDE_TABLE_NAME, f"domain:{domain}", "update_timestamp")
     _id = None
     if len(res["hits"]["hits"]) == 0:

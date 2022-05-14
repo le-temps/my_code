@@ -6,7 +6,8 @@ Squint检索系统的数据处理模块，实现将原始数据落盘数据库�
 ### TASK_DEFINE
 
 {
-    "source_index_type": "organization_businessinfo",
-    "destination_index_type": "organization",
-    "value": "xxxx公司"
+    "source_index_type": "organization_businessinfo", # 源Raw_table名
+    "destination_index_type": "organization", # 目的更新宽表名
+    "value": "xxxx公司", # update根据的extract条件值
+    "try_num": 0  # 已经尝试处理次数
 }

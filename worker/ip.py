@@ -85,7 +85,7 @@ UPDARE_IP_FUNC = {
 
 def ip_update_data(ip, type):
     if type not in UPDARE_IP_FUNC:
-        logger.error(f"ERROR: ip_update input arg type not in IP_TYPE({",".join(UPDARE_IP_FUNC.keys())}).")
+        logger.error(f"ERROR: ip_update input arg type not in IP_TYPE({','.join(UPDARE_IP_FUNC.keys())}).")
     res = es.search_latest_by_query_string(IP_WIDE_TABLE_NAME, f"ip:{ip}", "update_timestamp")
     _id = None
     if len(res["hits"]["hits"]) == 0:
