@@ -1,8 +1,8 @@
 from utils.logger import logger
-import time
 
 from service.db.elasticsearch import es
 from utils.config import settings
+from utils.time import get_current_time_string
 
 IP_WIDE_TABLE_NAME = "squint_ip"
 
@@ -19,7 +19,7 @@ def new_ip_wide_table_record():
         "cert_hash":[],
         "create_timestamp":"",
         "update_timestamp":"",
-        "tags":{}
+        "tags":[]
     }
 
 def delete_name_dict(dict, name):
@@ -28,7 +28,7 @@ def delete_name_dict(dict, name):
 
 def assamble_ip_update_data(ip, insert_raw_table_timestamp, exist_record):
     if exist_record:
-        return {"update_timestamp": time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}
+        return {"update_timestamp": get_current_time_string("time")}
     else:
         return {"ip":ip, "create_timestamp":insert_raw_table_timestamp, "update_timestamp":insert_raw_table_timestamp}
 

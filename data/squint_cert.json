@@ -1,0 +1,37 @@
+PUT /squint_cert
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "cert" : {
+          "type" : "keyword"
+        },
+        "raw" : {
+          "type" : "keyword"
+        },
+        "parser_version" : {
+          "type" : "keyword"
+        },
+        "parse_status" : {
+          "type" : "integer"
+        },
+        "parsed_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        },
+        "tags":{
+          "type" : "keyword"
+        }
+      }
+    }
+}

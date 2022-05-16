@@ -5,6 +5,7 @@ from ctypes import cdll, c_char_p
 from service.db.elasticsearch import es
 from utils.config import settings
 from utils.config import logger
+from utils.time import get_current_time_string
 
 CERT_WIDE_TABLE_NAME = "squint_cert"
 CERT_TYPE = ["cert_raw"]
@@ -19,8 +20,9 @@ def assamble_cert_data(raw, sha256):
         "raw": raw,
         "cert": sha256
         "parser_version": PARSER_VERSION,
-        "parsed_timestamp": time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
-        "parse_status": 1
+        "parsed_timestamp": get_current_time_string("time")
+        "parse_status": 1,
+        "tags": []
     }
     try:
         cert_json.update(json.loads(parseRaw(raw.encode("utf-8")).decode("utf-8")))

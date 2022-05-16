@@ -1,14 +1,14 @@
 from utils.logger import logger
-import time
 
 from service.db.elasticsearch import es
 from utils.config import settings
+from utils.time import get_current_time_string
 
 ORGANIZATION_WIDE_TABLE_NAME = "squint_organization"
 
 def new_organization_wide_table_record():
     return {
-        "name":"",
+        "organization":"",
         "info":{},
         "domains":[],
         "create_timestamp":"",
@@ -22,7 +22,7 @@ def delete_name_dict(dict, name):
 
 def assamble_organization_update_data(organization, insert_raw_table_timestamp, exist_record):
     if exist_record:
-        return {"update_timestamp": time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))}
+        return {"update_timestamp": get_current_time_string("time")}
     else:
         return {"organization":organization, "create_timestamp":insert_raw_table_timestamp, "update_timestamp":insert_raw_table_timestamp}
 

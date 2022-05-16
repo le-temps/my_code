@@ -4,6 +4,7 @@ import traceback
 
 from utils.config import settings
 from utils.logger import logger
+from utils.time import get_current_time_string
 
 class RedisQueue:
 
@@ -27,7 +28,10 @@ class RedisQueue:
         return self.redis.brpoplpush(settings.redis.tasks_list_name, settings.redis.distributed_list_name)
 
     def finish(self, task):
-        return self.redis.lrem(settings.redis.distributed_list_name, 1, task)
+        self.redis.lrem(settings.redis.distributed_list_name, 1, task)
+        task = json.loads(task)
+        task["finish_time"] = get_current_time_string("time")
+        task = json.dumps(task)  
         self.redis.lpush(settings.redis.finished_list_name, task)
         logger.debug(f"redis_queue finish task: {task}")
 

@@ -1,0 +1,56 @@
+PUT /squint_domain
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "domain" : {
+          "type" : "keyword"
+        },
+        "icp" : {
+          "type" : "object"
+        },
+        "psr" : {
+          "type" : "object"
+        },
+        "rr" : {
+          "type" : "object"
+        },
+        "subdomains": {
+          "type": "keyword"
+        },
+        "web" : {
+          "type" : "object"
+        },
+        "snapshot" : {
+          "type" : "object"
+        },
+        "whois" : {
+          "type" : "object"
+        },
+        "cert_hash" : {
+          "type" : "keyword"
+        },
+        "create_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        },
+        "update_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        },
+        "tags":{
+          "type" : "keyword"
+        }
+      }
+    }
+}

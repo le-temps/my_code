@@ -2,11 +2,11 @@ from fastapi import APIRouter, Response, status, Header
 import traceback
 from pydantic import BaseModel
 from typing import Dict, List, Optional
-import time
 
 from service.db.elasticsearch import es
 from utils.config import settings
 from utils.logger import logger
+from utils.time import get_current_time_string
 
 router = APIRouter()
 

@@ -21,10 +21,3 @@ def bakup_index_by_date(index, date):
     index_count = es.count_by_query_string(index, "*")
     bakup_index_count = es.count_by_query_string(index, "*")
     logger.info(f"备份到Index: {bakup_index}完成，源Index count: {index_count}, 备份Index count: {bakup_index_count}")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='按日期备份ES索引')
-    parser.add_argument('-i', help='需要备份的ES索引')
-    parser.add_argument('-d', help='需要备份的日期')
-    args = parser.parse_args()

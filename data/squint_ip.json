@@ -1,0 +1,56 @@
+PUT /squint_ip
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "ip" : {
+          "type" : "keyword"
+        },
+        "dns" : {
+          "type" : "object"
+        },
+        "domains" : {
+          "type" : "object"
+        },
+        "ports" : {
+          "type" : "keyword"
+        },
+        "protocols": {
+          "type": "object"
+        },
+        "router" : {
+          "type" : "object"
+        },
+        "router_cluster" : {
+          "type" : "object"
+        },
+        "geo" : {
+          "type" : "object"
+        },
+        "cert_hash" : {
+          "type" : "keyword"
+        },
+        "create_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        },
+        "update_timestamp": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss"
+        },
+        "tags":{
+          "type" : "keyword"
+        }
+      }
+    }
+}
