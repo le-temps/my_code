@@ -50,7 +50,7 @@ UPDARE_ORGANIZATION_FUNC = {
 def organization_update_data(name, type):
     if type not in UPDARE_ORGANIZATION_FUNC:
         logger.error(f"ERROR: organization_update input arg type not in ORGANIZATION_TYPE({','.join(UPDARE_ORGANIZATION_FUNC.keys())}).")
-    res = es.search_latest_by_query_string(ORGANIZATION_WIDE_TABLE_NAME, f"name:{name}", "update_timestamp")
+    res = es.search_latest_by_query_string(ORGANIZATION_WIDE_TABLE_NAME, f"organization:{name}", "update_timestamp")
     _id = None
     if len(res["hits"]["hits"]) == 0:
         update_data = new_organization_wide_table_record().update(UPDARE_ORGANIZATION_FUNC[type](name, False))

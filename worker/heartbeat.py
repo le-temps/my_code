@@ -1,0 +1,2 @@
+def heartbeat(*args):
+    pass

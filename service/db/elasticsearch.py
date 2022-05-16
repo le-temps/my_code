@@ -30,11 +30,11 @@ class ElasticsearchConn:
         return self.search(index=index, body={"size":1, "query":{"query_string":{"query":query_string}}, "sort":{timestamp_field:{"order":"desc"}}})
 
     def count_by_query_string(self, index, query_string):
-        return es.count(index=index, body={"query":{"query_string":{"query":query_string}}})["count"]
+        return self.es.count(index=index, body={"query":{"query_string":{"query":query_string}}})["count"]
 
     def insert(self, index, id, insert_body):
         try:
-            es.index(index=index, id=id, body=insert_body)
+            self.es.index(index=index, id=id, body=insert_body)
         except Exception as e:
             logger.error(traceback.format_exc())
             logger.error(e)
@@ -114,4 +114,4 @@ class ElasticsearchConn:
     def reindex(self, source_index, target_index):
         reindex(client=self.es, source_index=source_index, target_index=target_index, target_client=self.es)
 
-es = ElasticsearchConn(f"{settings.elasticsearch.host}:{settings.elasticsearch.port}", (f"{settings.elasticsearch_auth.user}", f"{settings.elasticsearch_auth.password}"))
+es = ElasticsearchConn(f"{settings.elasticsearch_auth.host}:{settings.elasticsearch_auth.port}", (f"{settings.elasticsearch_auth.user}", f"{settings.elasticsearch_auth.password}"))

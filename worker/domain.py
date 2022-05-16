@@ -5,6 +5,7 @@ from utils.config import settings
 from utils.time import get_current_time_string
 
 DOMAIN_WIDE_TABLE_NAME = "squint_domain"
+CERT_WIDE_TABLE_NAME = "squint_cert"
 IP_GEO_TABLE_NAME = "ip_geo_street"
 
 def new_domain_wide_table_record():
@@ -34,11 +35,12 @@ def assamble_domain_update_data(domain, insert_raw_table_timestamp, exist_record
         return {"domain":domain, "create_timestamp":insert_raw_table_timestamp, "update_timestamp":insert_raw_table_timestamp}
 
 def update_domain_cert(domain, exist_record):
-    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_cert", f"domain:{domain}", "insert_raw_table_timestamp")
-    if len(res["hits"]["hits"]) == 0:
+    res = es.search_by_query_string(settings.elasticsearch.index_prefix + "cert", f"subject.common_name:{domain}")
+    if len(revers_domains_res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_cert, domain:{domain})")
+    cert_hash = [e["cert"] for e in res["hits"]["hits"]]
     return assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record).update(
-            "cert_hash": res["hits"]["hits"][0]["_source"]["sha256"]
+            "cert_hash": cert_hash
         )
 
 def update_domain_icp(domain, exist_record):
@@ -146,3 +148,7 @@ def domain_update(domain, type):
 def domain_update(name, type):
     update_data, _id = domain_update_data(name, type)
     es.update(DOMAIN_WIDE_TABLE_NAME, _id, update_data)
+    if type == "domain_cert" and "A" in update_data["rr"]:
+        return [{"source_index_type":"ip_cert", "destination_index_type":"ip", "value":a["ip"], "try_num":0, "create_time":get_current_time_string("time")} for a in update_data["rr"]["A"]]
+    elif type == "domain_rr":
+        return [{"source_index_type":"ip_ptr", "destination_index_type":"ip", "value":a["ip"], "try_num":0, "create_time":get_current_time_string("time")} for a in update_data["rr"]["A"]]

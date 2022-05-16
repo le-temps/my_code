@@ -9,13 +9,15 @@ from service.db.redis import redis_queue
 from worker.ip import ip_update
 from worker.domain import domain_update
 from worker.organization import organization_update
+from worker.heartbeat import heartbeat
 from scripts.bakup_index_by_date import bakup_index_by_date
 
 update_func = {
     "ip": ip_update,
     "domain": domain_update,
     "organization": organization_update,
-    "cert": cert_parse
+    "cert": cert_parse,
+    "heartbeat": heartbeat
 }
 
 def worker():
@@ -37,7 +39,10 @@ def worker():
             logger.info(f"Finished bakuping elasticsearch wide_table of date: {date}")
             date = task_create_date
         try:
-            update_func[task["destination_index_type"]](task["value"], task["source_index_type"])
+            tasks = update_func[task["destination_index_type"]](task["value"], task["source_index_type"])
+            # 如果某个任务会触发提交一个后续任务，则提交
+            if tasks is not None:
+                redis_queue.produce(*[json.dumps(task) for task in tasks])
             redis_queue.finish(task)
         except Exception as e:
             logger.error(traceback.format_exc())
@@ -49,7 +54,7 @@ def worker():
 
 def heartbeat_producer():
     while True:
-        redis_queue.produce(json.dumps({"source_index_type":"HEARTBEAT", "destination_index_type":"HEARTBEAT", "value":"HEARTBEAT", "try_num":0, "create_time":get_current_time_string("time")}))
+        redis_queue.produce(json.dumps({"source_index_type":"heartbeat", "destination_index_type":"heartbeat", "value":"heartbeat", "try_num":0, "create_time":get_current_time_string("time")}))
         time.sleep(3600)
 
 

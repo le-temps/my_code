@@ -41,11 +41,15 @@ def update_ip_port(ip, exist_record):
         )
 
 def update_ip_cert(ip, exist_record):
-    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip_cert", f"ip:{ip}", "insert_raw_table_timestamp")
+    res = es.search_by_query_string(settings.elasticsearch.index_prefix + "domain", f"rr.A.ip:{ip}")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: ip_update cannot find record(type:ip_cert, ip:{ip})")
+    cert_hash = []
+    for e in res["hits"]["hits"]:
+        for sha256 in e["cert_hash"]:
+            cert_hash.append(sha256)
     return assamble_ip_update_data(ip, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record).update(
-            "cert_hash": res["hits"]["hits"][0]["_source"]["sha256"]
+            "cert_hash": cert_hash
         )
 
 def update_ip_ptr(ip, exist_record):
@@ -53,6 +57,8 @@ def update_ip_ptr(ip, exist_record):
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: ip_update cannot find record(type:ip_ptr, ip:{ip})")
     revers_domains_res = es.search_by_query_string(settings.elasticsearch.index_prefix + "domain_rr", f"A.ip:{ip}")
+    if len(revers_domains_res["hits"]["hits"]) == 0:
+        raise Exception(f"ERROR: ip_update cannot find record(type:ip_ptr, ip:{ip})")
     return assamble_ip_update_data(ip, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record).update(
             "domains": {
                 "ptr": res["hits"]["hits"][0]["_source"]["ptr"],

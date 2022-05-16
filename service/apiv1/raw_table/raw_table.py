@@ -57,13 +57,6 @@ async def insert_data_to_raw_table(input_data: InputData, response: Response, to
         insert_time = get_current_time_string("time")
         es.bulk_insert(settings.elasticsearch.index_prefix + input_data.type, input_data.data, {"insert_raw_table_timestamp": insert_time})
         redis_queue.produce(*[json.dumps({"source_index_type":input_data.type, "destination_index_type":input_data.type.split("_")[0], "value":get_task_value(e, VALUE_NAME_MAPPING_DICT[type]), "try_num":0, "create_time":insert_time}) for e in input_data.data])
-        if input_data.type == "domain_rr":
-            ips = []
-            for data in input_data.data:
-                for a in data["A"]:
-                    ips.append(a["ip"])
-            redis_queue.produce(*[json.dumps({"source_index_type":"ip_ptr", "destination_index_type":"ip", "value":ip, "try_num":0, "create_time":insert_time}) for ip in ips])
-        return InputResponse(status=200, message="OK.")
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(e)

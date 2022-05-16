@@ -22,7 +22,7 @@ class RedisQueue:
 
     def produce(self, *task):
         self.redis.lpush(settings.redis.tasks_list_name, *task)
-        logger.debug(f"redis_queue produce {task[0]["source_index_type"]} tasks count: {len(task)}")
+        logger.debug(f"redis_queue produce {task[0]['source_index_type']} tasks count: {len(task)}")
 
     def consume(self):
         return self.redis.brpoplpush(settings.redis.tasks_list_name, settings.redis.distributed_list_name)
@@ -49,5 +49,5 @@ class RedisQueue:
         logger.warning(f"REPRODUCE TASK: {task}")
 
 
-redis_queue = RedisQueue(host=settings.redis.host, port=settings.redis.port, password=settings.redis_auth.passowrd)
+redis_queue = RedisQueue(host=settings.redis_auth.host, port=settings.redis_auth.port, password=settings.redis_auth.password)
 

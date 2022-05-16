@@ -33,12 +33,15 @@ def assamble_cert_data(raw, sha256):
 def cert_parse(sha256, type):
     if type not in CERT_TYPE:
         logger.error(f"ERROR: cert_parse input arg type not in CERT_TYPE({','.join(CERT_TYPE)}).")
-    res = es.search_latest_by_query_string(CERT_WIDE_TABLE_NAME, f"sha256:{sha256}", "update_timestamp")
+    res = es.search_latest_by_query_string(CERT_WIDE_TABLE_NAME, f"cert:{sha256}", "parsed_timestamp")
     if len(res["hits"]["hits"]) == 0:
         res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + type, f"sha256:{sha256}", "insert_raw_table_timestamp")
         if len(res["hits"]["hits"]) == 0:
             raise Exception(f"ERROR: cert_parse cannot find record(type:{type}, sha256:{sha256})")
         cert_data = assamble_cert_data(res["hits"]["hits"][0]["_source"]["raw"], sha256)
         es.update(CERT_WIDE_TABLE_NAME, None, cert_data)
+        # 生成一个domain_cert任务
+        if cert_data["subject"]["common_name"]:
+            return [{"source_index_type":"domain_cert", "destination_index_type":"domain", "value":cert_data["subject"]["common_name"], "try_num":0, "create_time":get_current_time_string("time")}]
     else:
         logger.warning(f"Trying to parse existed cert, sha256: {sha256}, ignore.")
