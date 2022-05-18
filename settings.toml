@@ -9,7 +9,7 @@ index_prefix = "squint_"
 [redis]
 tasks_list_name = "squint_data_tasks"
 distributed_list_name = "squint_data_tasks_distributed"
-finished_list_name = "squint_data_tasks_finshed"
+finished_list_name = "squint_data_tasks_finished"
 aborted_list_name = "squint_data_tasks_aborted"
 max_try_num = 3
 

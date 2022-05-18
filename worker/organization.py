@@ -13,7 +13,7 @@ def new_organization_wide_table_record():
         "domains":[],
         "create_timestamp":"",
         "update_timestamp":"",
-        "tags":{}
+        "tags":[]
     }
 
 def delete_name_dict(dict, name):
@@ -30,36 +30,44 @@ def update_organization_businessinfo(organization, exist_record):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "organization_businessinfo", f"name:{organization}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: organization_update cannot find record(type:organization_businessinfo, name:{organization})")
-    return assamble_organization_update_data(organization, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record).update(
-            "info": delete_name_dict(res["hits"]["hits"][0]["_source"], "name")
+    update_data = assamble_organization_update_data(organization, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    if "create_date" in res["hits"]["hits"][0]["_source"] and res["hits"]["hits"][0]["_source"]["create_date"] == "":
+        res["hits"]["hits"][0]["_source"]["create_date"] = None
+    if "approval_date" in res["hits"]["hits"][0]["_source"] and res["hits"]["hits"][0]["_source"]["approval_date"] == "":
+        res["hits"]["hits"][0]["_source"]["approval_date"] = None
+    update_data.update(
+            {"info": delete_name_dict(res["hits"]["hits"][0]["_source"], "name")}
         )
+    return update_data
 
 def update_organization_domain(organization, exist_record):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "organization_domain", f"company:{organization}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: organization_update cannot find record(type:organization_domain, name:{organization})")
-    return assamble_organization_update_data(organization, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record).update(
-            "domains": res["hits"]["hits"][0]["_source"]["domains"]
+    update_data = assamble_organization_update_data(organization, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    update_data.update(
+            {"domains": res["hits"]["hits"][0]["_source"]["domains"]}
         )
+    return update_data
 
-UPDARE_ORGANIZATION_FUNC = {
+UPDATE_ORGANIZATION_FUNC = {
     "organization_businessinfo": update_organization_businessinfo,
     "organization_domain": update_organization_domain
 }
 
 def organization_update_data(name, type):
-    if type not in UPDARE_ORGANIZATION_FUNC:
-        logger.error(f"ERROR: organization_update input arg type not in ORGANIZATION_TYPE({','.join(UPDARE_ORGANIZATION_FUNC.keys())}).")
+    if type not in UPDATE_ORGANIZATION_FUNC:
+        logger.error(f"ERROR: organization_update input arg type not in ORGANIZATION_TYPE({','.join(UPDATE_ORGANIZATION_FUNC.keys())}).")
     res = es.search_latest_by_query_string(ORGANIZATION_WIDE_TABLE_NAME, f"organization:{name}", "update_timestamp")
-    _id = None
     if len(res["hits"]["hits"]) == 0:
-        update_data = new_organization_wide_table_record().update(UPDARE_ORGANIZATION_FUNC[type](name, False))
+        update_data = new_organization_wide_table_record()
+        update_data.update(UPDATE_ORGANIZATION_FUNC[type](name, False))
     else:
-        _id = res["hits"]["hits"][0]["_id"]
-        update_data = res["hits"]["hits"][0]["_source"].update(UPDARE_ORGANIZATION_FUNC[type](name, True))
+        update_data = res["hits"]["hits"][0]["_source"]
+        update_data.update(UPDATE_ORGANIZATION_FUNC[type](name, True))
 
-    return update_data, _id
+    return update_data
 
 def organization_update(name, type):
-    update_data, _id = organization_update_data(name, type)
-    es.update(ORGANIZATION_WIDE_TABLE_NAME, _id, update_data)
+    update_data = organization_update_data(name, type)
+    es.update(ORGANIZATION_WIDE_TABLE_NAME, name, update_data)

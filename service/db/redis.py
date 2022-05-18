@@ -18,11 +18,12 @@ class RedisQueue:
         while(e):
             _count += 1
             self.redis.lpush(settings.redis.tasks_list_name, e)
+            e = self.redis.rpop(settings.redis.distributed_list_name)
         return _count
 
     def produce(self, *task):
         self.redis.lpush(settings.redis.tasks_list_name, *task)
-        logger.debug(f"redis_queue produce {task[0]['source_index_type']} tasks count: {len(task)}")
+        logger.debug(f"redis_queue produce tasks count: {len(task)}")
 
     def consume(self):
         return self.redis.brpoplpush(settings.redis.tasks_list_name, settings.redis.distributed_list_name)

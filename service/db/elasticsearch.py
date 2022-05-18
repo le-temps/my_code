@@ -13,9 +13,9 @@ class ElasticsearchConn:
     def get_instance(self):
         return self.es
 
-    def search(self, index, query_body):
+    def search(self, index, body):
         try:
-            res = self.es.search(index=index, body=query_body)
+            res = self.es.search(index=index, body=body)
             return res
         except Exception as e:
             logger.error(traceback.format_exc())
@@ -54,10 +54,7 @@ class ElasticsearchConn:
 
     def update(self, index, id, update_body):
         try:
-            if id is not None:
-                self.es.update(index=index, doc_type='_doc', id=id, body={"doc":update_body})
-            else:
-                self.insert(index, None, update_body)
+            self.es.update(index=index, doc_type='_doc', id=id, body={"doc":update_body, "doc_as_upsert":True})
         except Exception as e:
             logger.error(traceback.format_exc())
             logger.error(e)
@@ -106,7 +103,7 @@ class ElasticsearchConn:
             raise
 
     def scan_by_query_string(self, index, query_string):
-        return scan(client=self.es, index=index, body={"size":1, "query":{"query_string":{"query":query_string}}})
+        return scan(client=self.es, index=index, query={"query":{"query_string":{"query":query_string}}})
 
     def create_index(self, index, body):
         self.es.indices.create(index=index, body=body)

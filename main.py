@@ -12,9 +12,10 @@ def service():
     uvicorn.run(app=app, host=settings.service.host, port=settings.service.port)
 
 @click.command()
-def worker():
+@click.option("--w", type=int, help="worker num")
+def worker(w):
     from worker.worker import start_worker
-    start_worker()
+    start_worker(w)
 
 @click.command()
 @click.option("--i", type=str, help="需要备份的ES索引名")
