@@ -9,7 +9,7 @@ def cli():
 @click.command()
 def service():
     from service.service import app
-    uvicorn.run(app=app, host=settings.service.host, port=settings.service.port)
+    uvicorn.run(app=app, host=settings.service_auth.host, port=settings.service_auth.port)
 
 @click.command()
 @click.option("--w", type=int, help="worker num")

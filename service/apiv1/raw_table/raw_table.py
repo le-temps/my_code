@@ -56,7 +56,10 @@ async def insert_data_to_raw_table(input_data: InputData, response: Response, to
             return InputResponse(status=400, message="Input data not correct.")
         insert_time = get_current_time_string("time")
         es.bulk_insert(settings.elasticsearch.index_prefix + input_data.type, input_data.data, {"insert_raw_table_timestamp": insert_time})
-        tasks = [for t in [json.dumps({"source_index_type":input_data.type, "destination_index_type":input_data.type.split("_")[0], "value":get_task_value(e, VALUE_NAME_MAPPING_DICT[type]), "try_num":0, "create_time":insert_time}) for e in input_data.data] if t["value"] != "" and t["value"] is not None]
+        tasks = []
+        for e in input_data.data:
+            tasks.append({"source_index_type":input_data.type, "destination_index_type":input_data.type.split("_")[0], "value":get_task_value(e, VALUE_NAME_MAPPING_DICT[input_data.type]), "try_num":0, "create_time":insert_time})
+        tasks = [json.dumps(t) for t in tasks if t["value"] != "" and t["value"] is not None]
         redis_queue.produce(*tasks)
     except Exception as e:
         logger.error(traceback.format_exc())

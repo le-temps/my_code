@@ -3,7 +3,7 @@ from utils.logger import logger
 from service.db.elasticsearch import es
 from utils.config import settings
 from utils.logger import logger
-from utils.time import get_current_time_string
+from utils.time import get_current_time_string, compare_time_string
 
 IP_WIDE_TABLE_NAME = "squint_ip"
 
@@ -67,20 +67,23 @@ def update_ip_cert(ip, exist_record):
 
 def update_ip_ptr(ip, exist_record):
     ptr = []
+    reverse_domains = []
+    timestamp = get_current_time_string("time")
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip_ptr", f"ip:{ip}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) != 0:
         ptr = res["hits"]["hits"][0]["_source"]["ptr"]
-        update_data = assamble_ip_update_data(ip, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
-    else:
-        update_data = assamble_ip_update_data(ip, get_current_time_string("time"), exist_record)
+        timestamp = res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"]
     revers_domains_res = es.search_by_query_string(settings.elasticsearch.index_prefix + "domain_rr", f"A.ip:{ip}")
-    if len(revers_domains_res["hits"]["hits"]) == 0:
-        raise Exception(f"ERROR: ip_update cannot find record(type:ip_ptr, ip:{ip})")
+    if len(revers_domains_res["hits"]["hits"]) != 0:
+        reverse_domains = [e["_source"]["domain"] for e in revers_domains_res["hits"]["hits"]]
+        if compare_time_string(timestamp, revers_domains_res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], "time"):
+            timestamp = revers_domains_res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"]
+    update_data = assamble_ip_update_data(ip, timestamp, exist_record)
     update_data.update(
             {
                 "domains": {
                     "ptr": ptr,
-                    "reverse_domains": [e["_source"]["domain"] for e in revers_domains_res["hits"]["hits"]]
+                    "reverse_domains": reverse_domains
                 }
             }
         )

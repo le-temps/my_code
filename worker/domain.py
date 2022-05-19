@@ -113,7 +113,7 @@ def update_domain_snapshot(domain, exist_record):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_snapshot", f"request.domain:{domain}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_snapshot, domain:{domain})")
-    remote_address_ip = res["hits"]["hits"][0]["response"]["remote_address"]["ip"]
+    remote_address_ip = res["hits"]["hits"][0]["_source"]["response"]["remote_address"]["ip"]
     ip_geo_res = es.search_by_query_string(IP_GEO_TABLE_NAME, f"bip:<={remote_address_ip} AND eip:>={remote_address_ip}")
     res["hits"]["hits"][0]["_source"]["response"]["remote_address"].update(
             {
@@ -123,19 +123,19 @@ def update_domain_snapshot(domain, exist_record):
                 "continent": ip_geo_res["hits"]["hits"][0]["_source"]["continent"],
                 "country": ip_geo_res["hits"]["hits"][0]["_source"]["country"],
                 "isp": ip_geo_res["hits"]["hits"][0]["_source"]["isp"],
-                "city": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"]["city"],
-                "district": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"]["district"],
-                "latbd": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"]["latbd"],
-                "latwgs": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"]["latwgs"],
-                "lngbd": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"]["lngbd"],
-                "lngwgs": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"]["lngwgs"],
-                "prov": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"]["prov"],
-                "radius": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"]["radius"]
+                "city": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"][0]["city"],
+                "district": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"][0]["district"],
+                "latbd": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"][0]["latbd"],
+                "latwgs": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"][0]["latwgs"],
+                "lngbd": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"][0]["lngbd"],
+                "lngwgs": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"][0]["lngwgs"],
+                "prov": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"][0]["prov"],
+                "radius": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"][0]["radius"]
             }
         )
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
     update_data.update(
-            {"snapshot": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain")}
+            {"snapshot": res["hits"]["hits"][0]["_source"]}
         )
     return update_data
 

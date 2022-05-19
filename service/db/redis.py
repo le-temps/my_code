@@ -10,15 +10,18 @@ class RedisQueue:
 
     def __init__(self, host, port, password):
         self.redis = redis.Redis(host=host, port=port, password=password)
-        logger.info(f"Init Redis done, check_unfinished_task num: {self.check_unfinished_task()}")
+        logger.info(f"Init Redis done, check_unfinished_task num: {self.check_unfinished_task(settings.redis.distributed_list_name, settings.redis.tasks_list_name)}")
 
-    def check_unfinished_task(self):
+    def __instance__(self):
+        return self.redis
+
+    def check_unfinished_task(self, src, dst):
         _count = 0
-        e = self.redis.rpop(settings.redis.distributed_list_name)
+        e = self.redis.rpop(src)
         while(e):
             _count += 1
-            self.redis.lpush(settings.redis.tasks_list_name, e)
-            e = self.redis.rpop(settings.redis.distributed_list_name)
+            self.redis.lpush(dst, e)
+            e = self.redis.rpop(src)
         return _count
 
     def produce(self, *task):

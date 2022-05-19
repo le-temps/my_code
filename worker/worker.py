@@ -5,7 +5,7 @@ from multiprocessing import Process
 
 from utils.logger import logger
 from utils.config import settings
-from utils.time import get_current_time_string
+from utils.time import get_current_time_string, compare_time_string
 from service.db.redis import redis_queue
 from worker.ip import ip_update
 from worker.domain import domain_update
@@ -33,7 +33,7 @@ def worker():
         # 此过程应该在每个天第一个新任务执行前进行
         # 因此每天至少应该自动生成一个单天任务，以进行宽表的备份
         task_create_date = task["create_time"][:10]
-        if task_create_date != date:
+        if task_create_date != date and compare_time_string(task_create_date, date, "date"):
             logger.info(f"Start bakuping elasticsearch wide_table of date: {date}")
             for k in update_func.keys():
                 if k == "heartbeat":
@@ -56,7 +56,7 @@ def worker():
         except Exception as e:
             logger.error(traceback.format_exc())
             logger.error(e)
-            redis_queue.reproduce(task)
+            redis_queue.reproduce(json.dumps(task))
         _count += 1
         if _count % 1000 == 0:
             logger.info(f"Worker finished task num: {_count}")
