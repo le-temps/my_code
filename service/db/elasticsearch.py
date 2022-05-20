@@ -26,6 +26,9 @@ class ElasticsearchConn:
     def search_by_query_string(self, index, query_string):
         return self.search(index=index, body={"size":1, "query":{"query_string":{"query":query_string}}})
 
+    def search_by_query_string_with_from_size(self, index, query_string, from, size):
+        return self.search(index=index, body={"from":from, "size":size, "query":{"query_string":{"query":query_string}}})
+
     def search_latest_by_query_string(self, index, query_string, timestamp_field):
         return self.search(index=index, body={"size":1, "query":{"query_string":{"query":query_string}}, "sort":{timestamp_field:{"order":"desc"}}})
 
@@ -110,5 +113,8 @@ class ElasticsearchConn:
 
     def reindex(self, source_index, target_index):
         reindex(client=self.es, source_index=source_index, target_index=target_index, target_client=self.es)
+
+    def stats_by_query_string(self, index, query_string, fields, buckets):
+        pass
 
 es = ElasticsearchConn(f"{settings.elasticsearch_auth.host}:{settings.elasticsearch_auth.port}", (f"{settings.elasticsearch_auth.user}", f"{settings.elasticsearch_auth.password}"))

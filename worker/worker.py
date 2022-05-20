@@ -28,23 +28,25 @@ def worker():
     while True:
         logger.debug("尝试从redis获取更新任务...")
         task = json.loads(redis_queue.consume())
-        logger.debug(f"获取到任务: {task}，正在执行中...")
-        # 如果任务日期发生改变，则先备份一下业务宽表，再进行更新任务
-        # 此过程应该在每个天第一个新任务执行前进行
-        # 因此每天至少应该自动生成一个单天任务，以进行宽表的备份
-        task_create_date = task["create_time"][:10]
-        if task_create_date != date and compare_time_string(task_create_date, date, "date"):
-            logger.info(f"Start bakuping elasticsearch wide_table of date: {date}")
-            for k in update_func.keys():
-                if k == "heartbeat":
-                    continue
-                index = settings.elasticsearch.index_prefix + k
-                logger.info(f"Start bakuping index {index} of date: {date}")
-                bakup_index_by_date(index, date)
-                logger.info(f"Finished bakuping index {index} of date: {date}")
+        try:
+            logger.debug(f"获取到任务: {task}，正在执行中...")
+            # 如果任务日期发生改变，则先备份一下业务宽表，再进行更新任务
+            # 此过程应该在每个天第一个新任务执行前进行
+            # 因此每天至少应该自动生成一个单天任务，以进行宽表的备份
+            task_create_date = task["create_time"][:10]
+            if task_create_date != date and compare_time_string(task_create_date, date, "date"):
+                logger.info(f"Start bakuping elasticsearch wide_table of date: {date}")
+                for k in update_func.keys():
+                    if k == "heartbeat":
+                        continue
+                    index = settings.elasticsearch.index_prefix + k
+                    logger.info(f"Start bakuping index {index} of date: {date}")
+                    bakup_index_by_date(index, date)
+                    logger.info(f"Finished bakuping index {index} of date: {date}")
             logger.info(f"Finished bakuping elasticsearch wide_table of date: {date}")
             date = task_create_date
-        try:
+
+            # execute task
             if task["value"] == "" or task["value"] is None:
                 logger.warning(f"Got a empty task: {task}")
                 continue
@@ -56,7 +58,10 @@ def worker():
         except Exception as e:
             logger.error(traceback.format_exc())
             logger.error(e)
-            redis_queue.reproduce(json.dumps(task))
+            try:
+                redis_queue.reproduce(json.dumps(task))
+            except:
+                pass
         _count += 1
         if _count % 1000 == 0:
             logger.info(f"Worker finished task num: {_count}")

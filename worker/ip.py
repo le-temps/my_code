@@ -90,9 +90,9 @@ def update_ip_ptr(ip, exist_record):
     return update_data
 
 def update_ip_protocol(ip, exist_record):
-    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip_protocol", f"ip:{ip}", "insert_raw_table_timestamp")
-    if len(res["hits"]["hits"]) == 0:
-        raise Exception(f"ERROR: ip_update cannot find record(type:ip_protocol, ip:{ip})")
+    ports_res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip_port", f"ip:{ip}", "insert_raw_table_timestamp")
+    if len(ports_res["hits"]["hits"]) == 0:
+        raise Exception(f"ERROR: ip_update cannot find record(type:ip_port, ip:{ip})")
     protocol_res = es.terms_and_top_hit(index=settings.elasticsearch.index_prefix + "ip_port", 
                                         query_string=f"ip:({' OR '.join(ports_res['hits']['hits'][0]['_source']['ports'])}) AND ip:{ip}",
                                         terms_size=65536,
@@ -101,7 +101,7 @@ def update_ip_protocol(ip, exist_record):
                                         script_field="insert_raw_table_timestamp"
                                         )
     protocols = [delete_name_dict(e[0]["_source"], "ip") for e in protocol_res]
-    update_data = assamble_ip_update_data(ip, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    update_data = assamble_ip_update_data(ip, protocol_res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
     update_data.update(
             {"protocols": protocols}
         )
@@ -131,4 +131,4 @@ def ip_update(ip, type):
     update_data = ip_update_data(ip, type)
     es.update(IP_WIDE_TABLE_NAME, ip, update_data)
     if type == "ip_protocol" and "cert_hash" in update_data["data"] and update_data["data"]["cert_hash"] is not None and update_data["data"]["cert_hash"] != "":
-        return {"source_index_type":"ip_cert", "destination_index_type":"ip", "value":ip, "try_num":0, "create_time":get_current_time_string("time")}
+        return [{"source_index_type":"ip_cert", "destination_index_type":"ip", "value":ip, "try_num":0, "create_time":get_current_time_string("time")}]

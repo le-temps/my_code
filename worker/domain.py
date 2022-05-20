@@ -167,6 +167,6 @@ def domain_update(domain, type):
     update_data = domain_update_data(domain, type)
     es.update(DOMAIN_WIDE_TABLE_NAME, domain, update_data)
     if type == "domain_web" and len(update_data["web"]["https"]) > 1:
-        return {"source_index_type":"domain_cert", "destination_index_type":"domain", "value":domain, "try_num":0, "create_time":get_current_time_string("time")}
+        return [{"source_index_type":"domain_cert", "destination_index_type":"domain", "value":domain, "try_num":0, "create_time":get_current_time_string("time")}]
     elif type == "domain_rr":
         return [{"source_index_type":"ip_ptr", "destination_index_type":"ip", "value":a["ip"], "try_num":0, "create_time":get_current_time_string("time")} for a in update_data["rr"]["A"]]
