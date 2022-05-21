@@ -20,3 +20,5 @@ def compare_time_string(time_string1, time_string2, type):
         return True
     else:
         return False
+
+print(compare_time_string("2022-05-19", "2022-05-21", "date"))

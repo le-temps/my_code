@@ -40,8 +40,8 @@ def update_domain_cert(domain, exist_record):
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_cert, domain:{domain})")
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
     cert_hash = ""
-    if "cert_hash" in res["hits"]["hits"][0]["_source"]["web"]["https"]:
-        cert_hash = res["hits"]["hits"][0]["_source"]["web"]["https"][0]["cert_hash"]
+    if "cert_hash" in res["hits"]["hits"][0]["_source"]["https"]:
+        cert_hash = res["hits"]["hits"][0]["_source"]["https"][0]["cert_hash"]
     update_data.update(
             {"cert_hash": cert_hash}
         )
@@ -114,8 +114,9 @@ def update_domain_snapshot(domain, exist_record):
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_snapshot, domain:{domain})")
     remote_address_ip = res["hits"]["hits"][0]["_source"]["response"]["remote_address"]["ip"]
-    ip_geo_res = es.search_by_query_string(IP_GEO_TABLE_NAME, f"bip:<={remote_address_ip} AND eip:>={remote_address_ip}")
-    res["hits"]["hits"][0]["_source"]["response"]["remote_address"].update(
+    if remote_address_ip is not None and remote_address_ip != "":
+        ip_geo_res = es.search_by_query_string(IP_GEO_TABLE_NAME, f"bip:<={remote_address_ip} AND eip:>={remote_address_ip}")
+        res["hits"]["hits"][0]["_source"]["response"]["remote_address"].update(
             {
                 "accuracy": ip_geo_res["hits"]["hits"][0]["_source"]["accuracy"],
                 "areacode": ip_geo_res["hits"]["hits"][0]["_source"]["areacode"],

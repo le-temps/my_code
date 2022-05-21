@@ -33,27 +33,27 @@ def worker():
             # 如果任务日期发生改变，则先备份一下业务宽表，再进行更新任务
             # 此过程应该在每个天第一个新任务执行前进行
             # 因此每天至少应该自动生成一个单天任务，以进行宽表的备份
-            task_create_date = task["create_time"][:10]
-            if task_create_date != date and compare_time_string(task_create_date, date, "date"):
-                logger.info(f"Start bakuping elasticsearch wide_table of date: {date}")
-                for k in update_func.keys():
-                    if k == "heartbeat":
-                        continue
-                    index = settings.elasticsearch.index_prefix + k
-                    logger.info(f"Start bakuping index {index} of date: {date}")
-                    bakup_index_by_date(index, date)
-                    logger.info(f"Finished bakuping index {index} of date: {date}")
-            logger.info(f"Finished bakuping elasticsearch wide_table of date: {date}")
-            date = task_create_date
+            #task_create_date = task["create_time"][:10]
+            #if task_create_date != date and compare_time_string(task_create_date, date, "date"):
+            #    logger.info(f"Start bakuping elasticsearch wide_table of date: {date}")
+            #    for k in update_func.keys():
+            #        if k == "heartbeat":
+            #            continue
+            #        index = settings.elasticsearch.index_prefix + k
+            #        logger.info(f"Start bakuping index {index} of date: {date}")
+            #        bakup_index_by_date(index, date)
+            #        logger.info(f"Finished bakuping index {index} of date: {date}")
+            #logger.info(f"Finished bakuping elasticsearch wide_table of date: {date}")
+            #date = task_create_date
 
             # execute task
             if task["value"] == "" or task["value"] is None:
                 logger.warning(f"Got a empty task: {task}")
-                continue
-            tasks = update_func[task["destination_index_type"]](task["value"], task["source_index_type"])
-            # 如果某个任务会触发提交一个后续任务，则提交
-            if tasks is not None and len(tasks) > 0:
-                redis_queue.produce(*[json.dumps(task) for task in tasks])
+            else:
+                tasks = update_func[task["destination_index_type"]](task["value"], task["source_index_type"])
+                # 如果某个任务会触发提交一个后续任务，则提交
+                if tasks is not None and len(tasks) > 0:
+                    redis_queue.produce(*[json.dumps(task) for task in tasks])
             redis_queue.finish(json.dumps(task))
         except Exception as e:
             logger.error(traceback.format_exc())
@@ -77,7 +77,7 @@ def start_worker(worker_num):
     process = []
     for i in range(worker_num):
         process.append(Process(target=worker))
-    process.append(Process(target=heartbeat_producer))
+    #process.append(Process(target=heartbeat_producer))
     for p in process:
         p.start()
     for p in process:

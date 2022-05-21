@@ -94,14 +94,14 @@ def update_ip_protocol(ip, exist_record):
     if len(ports_res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: ip_update cannot find record(type:ip_port, ip:{ip})")
     protocol_res = es.terms_and_top_hit(index=settings.elasticsearch.index_prefix + "ip_port", 
-                                        query_string=f"ip:({' OR '.join(ports_res['hits']['hits'][0]['_source']['ports'])}) AND ip:{ip}",
+                                        query_string=f"ip:({' OR '.join([str(p) for p in ports_res['hits']['hits'][0]['_source']['ports']])}) AND ip:{ip}",
                                         terms_size=65536,
                                         terms_field="port",
                                         top_hits_size=1,
                                         script_field="insert_raw_table_timestamp"
                                         )
     protocols = [delete_name_dict(e[0]["_source"], "ip") for e in protocol_res]
-    update_data = assamble_ip_update_data(ip, protocol_res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    update_data = assamble_ip_update_data(ip, ports_res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
     update_data.update(
             {"protocols": protocols}
         )
@@ -130,5 +130,7 @@ def ip_update_data(ip, type):
 def ip_update(ip, type):
     update_data = ip_update_data(ip, type)
     es.update(IP_WIDE_TABLE_NAME, ip, update_data)
-    if type == "ip_protocol" and "cert_hash" in update_data["data"] and update_data["data"]["cert_hash"] is not None and update_data["data"]["cert_hash"] != "":
-        return [{"source_index_type":"ip_cert", "destination_index_type":"ip", "value":ip, "try_num":0, "create_time":get_current_time_string("time")}]
+    if type == "ip_protocol":
+        for protocol in update_data["protocols"]:
+            if "cert_hash" in protocol["data"] and protocol["data"]["cert_hash"] is not None and protocol["data"]["cert_hash"] != "":
+                return [{"source_index_type":"ip_cert", "destination_index_type":"ip", "value":ip, "try_num":0, "create_time":get_current_time_string("time")}]
