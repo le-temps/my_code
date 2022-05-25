@@ -16,3 +16,10 @@ max_try_num = 3
 [raw_table]
 type = ["domain_icp", "domain_psr", "domain_rr", "domain_subdomain", "domain_whois", "domain_cert", "domain_web", "domain_snapshot", "ip_port", "ip_cert", "ip_ptr", "ip_protocol", "cert_raw", "organization_businessinfo", "organization_domain"]
 value_name = ["domain", "domain", "domain", "main_domain", "domain", "domain", "domain", "request.domain", "ip", "ip", "ip", "ip", "sha256", "name", "company"]
+
+[timeloop]
+[timeloop.bakup_wide_table]
+worker = "bakup_wide_table"
+type = "timing"
+level = "day"
+time = ["00:00:00"]

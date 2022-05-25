@@ -8,6 +8,12 @@ from utils.config import settings
 from utils.logger import logger
 from utils.time import get_current_time_string
 
+IMPORTANT = {
+    "domain": ["domain", "icp.main_licence", "icp.unit_name", "psr.record_id", "psr.unit_name", "rr.A.ip", "certs.cert", "whois.registrant.organization", "web.http.title", "web.https.title"],
+    "ip": ["ip", "geo.country", "geo.prov", "geo.city", "geo.district", "domains.reverse_domains", "protocols.port", "protocols.protocol", "dns.type", "certs.cert"],
+    "organization": ["organization", "info.business_status", "info.legal_person", "info.registered_capital", "info.province", "info.city", "info.district"]
+}
+
 router = APIRouter()
 
 def remove_object_field(object, field_name):
@@ -36,7 +42,7 @@ class SearchResponse(BaseModel):
     msg: str = ""
 
 @router.post("/api/v1/search/{field}", response_model=SearchResponse, tags=["wide_table"])
-async def get_domain_detail(field: str, page: int, rows: int, input_data: SearchInput, response: Response, token: Optional[str]=Header(None)):
+async def get_search(field: str, page: int, rows: int, input_data: SearchInput, response: Response, token: Optional[str]=Header(None)):
     if token != settings.service_auth.token:
         response.status_code=401
         return SearchResponse(state=903, msg="Authentication Failed")
@@ -47,7 +53,7 @@ async def get_domain_detail(field: str, page: int, rows: int, input_data: Search
             query_string = input_data.keyword
         else:
             query_string = "*"
-        res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + field, query_string=query_string)
+        res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + field, query_string=query_string, page * rows, rows, source=IMPORTANT[field])
         if len(res["hits"]["hits"]) > 0:
             return DetailResponse(state=800, {"total":len(res["hits"]["hits"][0]["_source"])}, payload=remove_object_field(res["hits"]["hits"][0]["_source"], "insert_raw_table_timestamp"))
         else:
@@ -59,7 +65,7 @@ async def get_domain_detail(field: str, page: int, rows: int, input_data: Search
         return DetailResponse(state=910, msg=str(e))
 
 @router.post("/api/v1/search/{field}/stats", response_model=SearchResponse, tags=["wide_table"])
-async def get_domain_detail(field: str, input_data: SearchInput, response: Response, token: Optional[str]=Header(None)):
+async def get_search_stats(field: str, input_data: SearchInput, response: Response, token: Optional[str]=Header(None)):
     if token != settings.service_auth.token:
         response.status_code=401
         return SearchResponse(state=903, msg="Authentication Failed")
@@ -95,6 +101,26 @@ def get_detail(type, value, response, token):
     try:
         res = es.search_by_query_string(index=settings.elasticsearch.index_prefix + type, query_string=f"{type}:{value}")
         if len(res["hits"]["hits"]) > 0:
+            if type == "ip":
+                # ip_cert
+                for protocol in res["hits"]["hits"][0]["_source"]["protocols"]:
+                    if protocol["protocol"] == "https" and cert_hash in protocol["data"]:
+                        cert_res = es.search_by_query_string(index=settings.elasticsearch.index_prefix + "cert", query_string=f"cert:{protocol["data"]["cert_hash"]}")
+                        res["hits"]["hits"][0]["_source"]["certs"] = [cert_res["hits"]["hits"][0]["_source"]]
+                        break
+            if type == "domain":
+                # domain_cert
+                if res["hits"]["hits"][0]["_source"]["web"] and res["hits"]["hits"][0]["_source"]["web"]["https"] and cert_hash in res["hits"]["hits"][0]["_source"]["web"]["https"][0]:
+                    cert_res = es.search_by_query_string(index=settings.elasticsearch.index_prefix + "cert", query_string=f"cert:{res["hits"]["hits"][0]["_source"]["web"]["https"][0]["cert_hash"]}")
+                    res["hits"]["hits"][0]["_source"]["certs"] = [cert_res["hits"]["hits"][0]["_source"]]
+                    break
+                # domain_subdomain
+                subdomains_res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + "domain", query_string=" OR ".join([f"domain:{domain}" for domain in res["hits"]["hits"][0]["_source"]["subdomains"]]), 0, 10, source=IMPORTANT["domain"])
+                res["hits"]["hits"][0]["_source"]["subdomains"] = [e["_source"] for e in subdomains_res["hits"]["hits"]]
+            if type == "organization":
+                # organization_subdomain
+                domains_res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + "domain", query_string=" OR ".join([f"domain:{domain}" for domain in res["hits"]["hits"][0]["_source"]["domains"]]), 0, 10, source=IMPORTANT["domain"])
+                res["hits"]["hits"][0]["_source"]["domains"] = [e["_source"] for e in domains_res["hits"]["hits"]]
             return DetailResponse(state=800, payload=remove_object_field(res["hits"]["hits"][0]["_source"], "insert_raw_table_timestamp"))
         else:
             return DetailResponse(state=800, payload={})

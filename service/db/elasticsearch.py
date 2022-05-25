@@ -26,8 +26,11 @@ class ElasticsearchConn:
     def search_by_query_string(self, index, query_string):
         return self.search(index=index, body={"size":1, "query":{"query_string":{"query":query_string}}})
 
-    def search_by_query_string_with_from_size(self, index, query_string, from_num, size):
-        return self.search(index=index, body={"from":from_num, "size":size, "query":{"query_string":{"query":query_string}}})
+    def search_by_query_string_with_from_size(self, index, query_string, from_num, size, source=None):
+        if source:
+            return self.search(index=index, body={"from":from_num, "size":size, "_source":source, "query":{"query_string":{"query":query_string}}})
+        else:
+            return self.search(index=index, body={"from":from_num, "size":size, "query":{"query_string":{"query":query_string}}})
 
     def search_latest_by_query_string(self, index, query_string, timestamp_field):
         return self.search(index=index, body={"size":1, "query":{"query_string":{"query":query_string}}, "sort":{timestamp_field:{"order":"desc"}}})

@@ -13,7 +13,7 @@ def new_ip_wide_table_record():
         "dns":{},
         "domains":{},
         "ports":[],
-        "protocols":{},
+        "protocols":[],
         "router":{},
         "router_cluster":{},
         "geo":{},
