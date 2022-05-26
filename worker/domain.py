@@ -34,7 +34,7 @@ def assamble_domain_update_data(domain, insert_raw_table_timestamp, exist_record
     else:
         return {"domain":domain, "create_timestamp":insert_raw_table_timestamp, "update_timestamp":insert_raw_table_timestamp}
 
-def update_domain_cert(domain, exist_record):
+def update_domain_cert(domain, exist_record, tags):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_web", f"domain:{domain}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_cert, domain:{domain})")
@@ -47,27 +47,41 @@ def update_domain_cert(domain, exist_record):
         )
     return update_data
 
-def update_domain_icp(domain, exist_record):
+def update_domain_icp(domain, exist_record, tags):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_icp", f"domain:{domain}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_icp, domain:{domain})")
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    if tags:
+        tags += ["icp"]
+    else:
+        tags = []
     update_data.update(
-            {"icp": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain")}
+            {
+                "icp": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
+                "tags": tags
+            }
         )
     return update_data
 
-def update_domain_psr(domain, exist_record):
+def update_domain_psr(domain, exist_record, tags):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_psr", f"domain:{domain}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_psr, domain:{domain})")
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    if tags:
+        tags += ["psr"]
+    else:
+        tags = []
     update_data.update(
-            {"psr": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain")}
+            {
+                "psr": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
+                "tags": tags
+            }
         )
     return update_data
 
-def update_domain_rr(domain, exist_record):
+def update_domain_rr(domain, exist_record, tags):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_rr", f"domain:{domain}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_rr, domain:{domain})")
@@ -79,7 +93,7 @@ def update_domain_rr(domain, exist_record):
         )
     return update_data
 
-def update_domain_subdomain(domain, exist_record):
+def update_domain_subdomain(domain, exist_record, tags):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_subdomain", f"main_domain:{domain}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_subdomain, domain:{domain})")
@@ -89,7 +103,7 @@ def update_domain_subdomain(domain, exist_record):
         )
     return update_data
 
-def update_domain_whois(domain, exist_record):
+def update_domain_whois(domain, exist_record, tags):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_whois", f"domain:{domain}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_whois, domain:{domain})")
@@ -99,17 +113,31 @@ def update_domain_whois(domain, exist_record):
         )
     return update_data
 
-def update_domain_web(domain, exist_record):
+def update_domain_web(domain, exist_record, tags):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_web", f"domain:{domain}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_web, domain:{domain})")
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    if tags:
+        if res["hits"]["hits"][0]["_source"]["http"]:
+            tags += ["http"]
+        if res["hits"]["hits"][0]["_source"]["https"]:
+            tags += ["https"]
+        if 200 in ([e["status_code"] for e in res["hits"]["hits"][0]["_source"]["http"]] + [e["status_code"] for e in res["hits"]["hits"][0]["_source"]["https"]]):
+            tags += ["access_successful"]
+        else:
+            tags += ["access_failed"]
+    else:
+        tags = []
     update_data.update(
-            {"web": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain")}
+            {
+                "web": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
+                "tags": tags
+            }
         )
     return update_data
 
-def update_domain_snapshot(domain, exist_record):
+def update_domain_snapshot(domain, exist_record, tags):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "domain_snapshot", f"request.domain:{domain}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_snapshot, domain:{domain})")
@@ -135,8 +163,20 @@ def update_domain_snapshot(domain, exist_record):
             }
         )
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    if tags:
+        if remote_address_ip is not None and remote_address_ip != "" and res["hits"]["hits"][0]["_source"]["response"]["remote_address"]["country"] == "中国" and res["hits"]["hits"][0]["_source"]["response"]["remote_address"]["prov"] not in ["中国香港", "中国台湾", "澳门特别行政区"]:
+            tags += ["in_mainland"]
+        else:
+            tags += ["not_in_mainland"]
+        if res["hits"]["hits"][0]["_source"]["classification"]["type"] in ["赌博", "色情"]:
+            tags += ["illegal"]
+        else:
+            tags += ["legal"]
     update_data.update(
-            {"snapshot": res["hits"]["hits"][0]["_source"]}
+            {
+                "snapshot": res["hits"]["hits"][0]["_source"],
+                "tags": tags
+            }
         )
     return update_data
 
@@ -157,10 +197,10 @@ def domain_update_data(domain, type):
     res = es.search_latest_by_query_string(DOMAIN_WIDE_TABLE_NAME, f"domain:{domain}", "update_timestamp")
     if len(res["hits"]["hits"]) == 0:
         update_data = new_domain_wide_table_record()
-        update_data.update(UPDARE_DOMAIN_FUNC[type](domain, False))
+        update_data.update(UPDARE_DOMAIN_FUNC[type](domain, False, None))
     else:
         update_data = res["hits"]["hits"][0]["_source"]
-        update_data.update(UPDARE_DOMAIN_FUNC[type](domain, True))
+        update_data.update(UPDARE_DOMAIN_FUNC[type](domain, True, update_data["tags"]))
         
     return update_data
 

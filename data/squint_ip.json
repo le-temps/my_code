@@ -14,19 +14,67 @@ PUT /squint_ip
     "mappings" : {
       "properties" : {
         "ip" : {
-          "type" : "keyword"
+          "type" : "ip"
         },
         "dns" : {
-          "type" : "object"
+          "properties" : {
+            "type": {
+              "type": "keyword"
+            },
+            "version": {
+              "type": "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            }
+          }
         },
         "domains" : {
-          "type" : "object"
+          "properties" : {
+            "ptr": {
+              "type": "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "reverse_domains": {
+              "type": "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            }
+          }
         },
         "ports" : {
-          "type" : "keyword"
+          "type" : "integer"
         },
         "protocols": {
-          "type": "object"
+          "properties" : {
+            "port" : {
+              "type" : "integer"
+            },
+            "protocol" : {
+              "type" : "keyword"
+            },
+            "data" : {
+              "type" : "object"
+            },
+            "collected_timestamp" : {
+              "type" : "date"
+            }
+          }
         },
         "router" : {
           "type" : "object"
@@ -35,7 +83,50 @@ PUT /squint_ip
           "type" : "object"
         },
         "geo" : {
-          "type" : "object"
+          "properties": {
+            "accuracy" : {
+              "type" : "keyword"
+            },
+            "areacode" : {
+              "type" : "keyword"
+            },
+            "asnumber" : {
+              "type" : "keyword"
+            },
+            "continent" : {
+              "type" : "keyword"
+            },
+            "country" : {
+              "type" : "keyword"
+            },
+            "isp" : {
+              "type" : "keyword"
+            },
+            "city" : {
+              "type" : "keyword"
+            },
+            "district" : {
+              "type" : "keyword"
+            },
+            "latbd" : {
+              "type" : "float"
+            },
+            "latwgs" : {
+              "type" : "float"
+            },
+            "lngbd" : {
+              "type" : "float"
+            },
+            "lngwgs" : {
+              "type" : "float"
+            },
+            "prov" : {
+              "type" : "keyword"
+            },
+            "radius" : {
+              "type" : "keyword"
+            }
+          }
         },
         "cert_hash" : {
           "type" : "keyword"

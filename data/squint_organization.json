@@ -14,13 +14,151 @@ PUT /squint_organization
     "mappings" : {
       "properties" : {
         "organization" : {
-          "type" : "keyword"
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          },
+          "analyzer" : "ik_smart"
         },
         "info" : {
-          "type" : "object"
+          "properties" : {
+            "name" : {
+              "type" : "keyword"
+            },
+            "business_status" : {
+              "type" : "keyword"
+            },
+            "legal_person" : {
+              "type" : "keyword"
+            },
+            "registered_capital" : {
+              "type" : "keyword"
+            },
+            "paid_up_capital" : {
+              "type" : "keyword"
+            },
+            "create_date" : {
+              "type" : "keyword"
+            },
+            "approval_date" : {
+              "type" : "keyword"
+            },
+            "business_period" : {
+              "type" : "keyword"
+            },
+            "province" : {
+              "type" : "keyword"
+            },
+            "city" : {
+              "type" : "keyword"
+            },
+            "district" : {
+              "type" : "keyword"
+            },
+            "uniform_social_credit_code" : {
+              "type" : "keyword"
+            },
+            "taxpayer_identification_number" : {
+              "type" : "keyword"
+            },
+            "registration_number" : {
+              "type" : "keyword"
+            },
+            "organization_id" : {
+              "type" : "keyword"
+            },
+            "insured_number" : {
+              "type" : "keyword"
+            },
+            "type" : {
+              "type" : "keyword"
+            },
+            "industry" : {
+              "type" : "keyword"
+            },
+            "previous_name" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "registration_address" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "latest_report_address" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "website_url" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "phone" : {
+              "type" : "keyword"
+            },
+            "other_phone" : {
+              "type" : "keyword"
+            },
+            "email" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "other_email" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "business_range" : {
+              "type" : "keyword"
+            }
+          }
         },
         "domains" : {
-          "type" : "keyword"
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          },
+          "analyzer" : "ik_smart"
         },
         "create_timestamp": {
           "type": "date",

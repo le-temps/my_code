@@ -14,6 +14,12 @@ IMPORTANT = {
     "organization": ["organization", "info.business_status", "info.legal_person", "info.registered_capital", "info.province", "info.city", "info.district"]
 }
 
+STATS = {
+    "domain": ["domain.web.http.server", "domain.web.https.server"],
+    "ip": ["ports", "protocols.protocol", "dns.type"],
+    "organization": ["info.business_status", "info.type", "info.industry"]
+}
+
 router = APIRouter()
 
 def remove_object_field(object, field_name):
@@ -76,9 +82,13 @@ async def get_search_stats(field: str, input_data: SearchInput, response: Respon
             query_string = input_data.keyword
         else:
             query_string = "*"
-        res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + field, query_string=f"{type}:{value}")
+        # domain stats 
+        stats_results = {}
+        terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + field, query_string=query_string, STATS[field], 10)
+        for i, key in enumerate(STATS[field]):
+            stats_results[key] = terms_res[i]
         if len(res["hits"]["hits"]) > 0:
-            return DetailResponse(state=800, payload=remove_object_field(res["hits"]["hits"][0]["_source"], "insert_raw_table_timestamp"))
+            return DetailResponse(state=800, payload=stats_results)
         else:
             return DetailResponse(state=800, payload={})
     except Exception as e:

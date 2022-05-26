@@ -33,7 +33,7 @@ def assamble_ip_update_data(ip, insert_raw_table_timestamp, exist_record):
     else:
         return {"ip":ip, "create_timestamp":insert_raw_table_timestamp, "update_timestamp":insert_raw_table_timestamp}
 
-def update_ip_port(ip, exist_record):
+def update_ip_port(ip, exist_record, tags):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip_port", f"ip:{ip}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: ip_update cannot find record(type:ip_port, ip:{ip})")
@@ -43,7 +43,7 @@ def update_ip_port(ip, exist_record):
         )
     return update_data
 
-def update_ip_cert(ip, exist_record):
+def update_ip_cert(ip, exist_record, tags):
     res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip_protocol", f"ip:{ip}", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: ip_update cannot find record(type:ip_cert, ip:{ip})")
@@ -65,7 +65,7 @@ def update_ip_cert(ip, exist_record):
         )
     return update_data
 
-def update_ip_ptr(ip, exist_record):
+def update_ip_ptr(ip, exist_record, tags):
     ptr = []
     reverse_domains = []
     timestamp = get_current_time_string("time")
@@ -89,7 +89,7 @@ def update_ip_ptr(ip, exist_record):
         )
     return update_data
 
-def update_ip_protocol(ip, exist_record):
+def update_ip_protocol(ip, exist_record, tags):
     ports_res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip_port", f"ip:{ip}", "insert_raw_table_timestamp")
     if len(ports_res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: ip_update cannot find record(type:ip_port, ip:{ip})")
@@ -107,11 +107,16 @@ def update_ip_protocol(ip, exist_record):
         )
     return update_data
 
+def update_ip_dns(ip, exist_record, tags):
+    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip_ptr", f"ip:{ip}", "parsed_date")
+
+
 UPDARE_IP_FUNC = {
     "ip_port": update_ip_port,
     "ip_cert": update_ip_cert,
     "ip_ptr": update_ip_ptr,
-    "ip_protocol": update_ip_protocol
+    "ip_protocol": update_ip_protocol,
+    "ip_dns": update_ip_dns
 }
 
 def ip_update_data(ip, type):
@@ -120,10 +125,10 @@ def ip_update_data(ip, type):
     res = es.search_latest_by_query_string(IP_WIDE_TABLE_NAME, f"ip:{ip}", "update_timestamp")
     if len(res["hits"]["hits"]) == 0:
         update_data = new_ip_wide_table_record()
-        update_data.update(UPDARE_IP_FUNC[type](ip, False))
+        update_data.update(UPDARE_IP_FUNC[type](ip, False, None))
     else:
         update_data = res["hits"]["hits"][0]["_source"]
-        update_data.update(UPDARE_IP_FUNC[type](ip, True))
+        update_data.update(UPDARE_IP_FUNC[type](ip, True, update_data["tags"]))
 
     return update_data
 

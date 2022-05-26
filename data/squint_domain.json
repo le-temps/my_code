@@ -14,28 +14,931 @@ PUT /squint_domain
     "mappings" : {
       "properties" : {
         "domain" : {
-          "type" : "keyword"
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          },
+          "analyzer" : "ik_smart"
         },
         "icp" : {
-          "type" : "object"
+          "properties" : {
+            "home_url" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "limit_access" : {
+              "type" : "keyword"
+            },
+            "main_licence" : {
+              "type" : "keyword"
+            },
+            "service_licence" : {
+              "type" : "keyword"
+            },
+            "service_name" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "unit_name" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "unit_type" : {
+              "type" : "keyword"
+            },
+            "update_record_time" : {
+              "type" : "keyword"
+            },
+            "collected_timestamp" : {
+              "type" : "date"
+            }
+          }
         },
         "psr" : {
-          "type" : "object"
+          "properties" : {
+            "record_id" : {
+              "type" : "keyword"
+            },
+            "unit_type" : {
+              "type" : "keyword"
+            },
+            "unit_name" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "website_main_domain" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "record_time" : {
+              "type" : "keyword"
+            },
+            "collected_timestamp" : {
+              "type" : "date"
+            },
+            "record_bureau" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "website_second_domain" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "website_name" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "website_type" : {
+              "type" : "keyword"
+            }
+          }
         },
         "rr" : {
-          "type" : "object"
+          "properties" : {
+            "A" : {
+              "properties" : {
+                "accuracy" : {
+                  "type" : "keyword"
+                },
+                "areacode" : {
+                  "type" : "keyword"
+                },
+                "asnumber" : {
+                  "type" : "keyword"
+                },
+                "continent" : {
+                  "type" : "keyword"
+                },
+                "country" : {
+                  "type" : "keyword"
+                },
+                "ip" : {
+                  "type" : "keyword"
+                },
+                "isp" : {
+                  "type" : "keyword"
+                },
+                "city" : {
+                  "type" : "keyword"
+                },
+                "district" : {
+                  "type" : "keyword"
+                },
+                "latbd" : {
+                  "type" : "float"
+                },
+                "latwgs" : {
+                  "type" : "float"
+                },
+                "lngbd" : {
+                  "type" : "float"
+                },
+                "lngwgs" : {
+                  "type" : "float"
+                },
+                "prov" : {
+                  "type" : "keyword"
+                },
+                "radius" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "AAAA" : {
+              "type" : "keyword"
+            },
+            "MX" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "CNAME" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "NS" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            },
+            "TXT" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "analyzer" : "ik_smart"
+            }
+          }
         },
         "subdomains": {
-          "type": "keyword"
+          "type": "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          },
+          "analyzer" : "ik_smart"
         },
         "web" : {
-          "type" : "object"
+          "properties" : {
+            "http" : {
+              "properties" : {
+                "url" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  },
+                  "analyzer" : "ik_smart"
+                },
+                "status_code" : {
+                  "type" : "integer"
+                },
+                "title" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  },
+                  "analyzer" : "ik_smart"
+                },
+                "server" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  },
+                  "analyzer" : "ik_smart"
+                },
+                "keywords" : {
+                  "type" : "keyword"
+                },
+                "description" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  },
+                  "analyzer" : "ik_smart"
+                },
+                "headers" : {
+                  "properties" : {
+                    "key" : {
+                      "type" : "keyword"
+                    },
+                    "value" : {
+                      "type" : "text",
+                      "fields" : {
+                        "keyword" : {
+                          "type" : "keyword",
+                          "ignore_above" : 256
+                        }
+                      },
+                      "analyzer" : "ik_smart"
+                    }
+                  }
+                }
+              }
+            },
+            "https" : {
+              "properties" : {
+                "url" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  },
+                  "analyzer" : "ik_smart"
+                },
+                "status_code" : {
+                  "type" : "integer"
+                },
+                "title" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  },
+                  "analyzer" : "ik_smart"
+                },
+                "server" : {
+                  "type" : "keyword"
+                },
+                "keywords" : {
+                  "type" : "keyword"
+                },
+                "description" : {
+                  "type" : "text",
+                  "fields" : {
+                    "keyword" : {
+                      "type" : "keyword",
+                      "ignore_above" : 256
+                    }
+                  },
+                  "analyzer" : "ik_smart"
+                },
+                "headers" : {
+                  "properties" : {
+                    "key" : {
+                      "type" : "keyword"
+                    },
+                    "value" : {
+                      "type" : "text",
+                      "fields" : {
+                        "keyword" : {
+                          "type" : "keyword",
+                          "ignore_above" : 256
+                        }
+                      },
+                      "analyzer" : "ik_smart"
+                    }
+                  }
+                },
+                "cert_hash" : {
+                  "type" : "keyword"
+                }
+              }
+            }
+          }
         },
         "snapshot" : {
-          "type" : "object"
+          "meta" : {
+            "properties" : {
+              "snapshot_version" : {
+                "type" : "keyword"
+              },
+              "classifier_version" : {
+                "type" : "keyword"
+              },
+              "location" : {
+                "type" : "keyword"
+              }
+            }
+          },
+          "request" : {
+            "properties" : {
+              "scheme" : {
+                "type" : "keyword"
+              },
+              "domain" : {
+                "type" : "keyword"
+              },
+              "main_domain" : {
+                "type" : "keyword"
+              },
+              "request_url" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              }
+            }
+          },
+          "response" : {
+            "properties" : {
+              "remote_address" : {
+                "properties" : {
+                  "ip" : {
+                    "type" : "keyword"
+                  },
+                  "port" : {
+                    "type" : "integer"
+                  }
+                }
+              },
+              "response_url" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "snapshot_url" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "favicon" : {
+                "properties" : {
+                  "img_url" : {
+                    "type" : "text",
+                    "fields" : {
+                      "keyword" : {
+                        "type" : "keyword",
+                        "ignore_above" : 256
+                      }
+                    },
+                    "analyzer" : "ik_smart"
+                  },
+                  "md5" : {
+                    "type" : "keyword"
+                  }
+                }
+              },
+              "frame" : {
+                "properties" : {
+                  "frame_url" : {
+                    "type" : "text",
+                    "fields" : {
+                      "keyword" : {
+                        "type" : "keyword",
+                        "ignore_above" : 256
+                      }
+                    },
+                    "analyzer" : "ik_smart"
+                  },
+                  "html_url" : {
+                    "type" : "text",
+                    "fields" : {
+                      "keyword" : {
+                        "type" : "keyword",
+                        "ignore_above" : 256
+                      }
+                    },
+                    "analyzer" : "ik_smart"
+                  },
+                  "icp" : {
+                    "type" : "keyword"
+                  },
+                  "keywords" : {
+                    "type" : "text",
+                    "fields" : {
+                      "keyword" : {
+                        "type" : "keyword",
+                        "ignore_above" : 256
+                      }
+                    },
+                    "analyzer" : "ik_smart"
+                  },
+                  "description" : {
+                    "type" : "text",
+                    "fields" : {
+                      "keyword" : {
+                        "type" : "keyword",
+                        "ignore_above" : 256
+                      }
+                    },
+                    "analyzer" : "ik_smart"
+                  },
+                  "text_content_url" : {
+                    "type" : "text",
+                    "fields" : {
+                      "keyword" : {
+                        "type" : "keyword",
+                        "ignore_above" : 256
+                      }
+                    },
+                    "analyzer" : "ik_smart"
+                  },
+                  "title" : {
+                    "type" : "text",
+                    "fields" : {
+                      "keyword" : {
+                        "type" : "keyword",
+                        "ignore_above" : 256
+                      }
+                    },
+                    "analyzer" : "ik_smart"
+                  },
+                  "child_frames" : {
+                    "type" : "object"
+                  }
+                }
+              },
+              "external_urls" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "cert_hash" : {
+                "type" : "keyword"
+              }
+            }
+          },
+          "classification" : {
+            "properties" : {
+              "type" : {
+                "type" : "keyword"
+              },
+              "probability" : {
+                "type" : "float"
+              }
+            }
+          },
+          "collected_timestamp": {
+            "type": "date"
+          }
         },
         "whois" : {
-          "type" : "object"
+          "domain_info" : {
+            "properties" : {
+              "name" : {
+                "type" : "keyword"
+              },
+              "name_servers" : {
+                "type" : "keyword"
+              },
+              "status" : {
+                "type" : "keyword"
+              },
+              "dns_sec" : {
+                "type" : "keyword"
+              }
+            }
+          },
+          "registrant" : {
+            "properties" : {
+              "id" : {
+                "type" : "keyword"
+              },
+              "postal_code" : {
+                "type" : "keyword"
+              },
+              "phone_extension" : {
+                "type" : "keyword"
+              },
+              "fax" : {
+                "type" : "keyword"
+              },
+              "fax_extension" : {
+                "type" : "keyword"
+              },
+              "city" : {
+                "type" : "keyword"
+              },
+              "country" : {
+                "type" : "keyword"
+              },
+              "email" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "name" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "organization" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "phone" : {
+                "type" : "keyword"
+              },
+              "province" : {
+                "type" : "keyword"
+              },
+              "street" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              }
+            }
+          },
+          "registrar" : {
+            "properties" : {
+              "email" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "name" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "phone" : {
+                "type" : "keyword"
+              },
+              "website" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "whois_servers" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "iana_id" : {
+                "type" : "keyword"
+              }
+            }
+          },
+          "registry" : {
+            "properties" : {
+              "domain_id" : {
+                "type" : "date"
+              },
+              "creation_time" : {
+                "type" : "date"
+              },
+              "expiration_time" : {
+                "type" : "date"
+              },
+              "updated_time" : {
+                "type" : "date"
+              }
+            }
+          },
+          "administrator" : {
+            "properties" : {
+              "id" : {
+                "type" : "keyword"
+              },
+              "postal_code" : {
+                "type" : "keyword"
+              },
+              "phone_extension" : {
+                "type" : "keyword"
+              },
+              "fax" : {
+                "type" : "keyword"
+              },
+              "fax_extension" : {
+                "type" : "keyword"
+              },
+              "city" : {
+                "type" : "keyword"
+              },
+              "country" : {
+                "type" : "keyword"
+              },
+              "email" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "name" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "organization" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "phone" : {
+                "type" : "keyword"
+              },
+              "province" : {
+                "type" : "keyword"
+              },
+              "street" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              }
+            }
+          },
+          "technician" : {
+            "properties" : {
+              "id" : {
+                "type" : "keyword"
+              },
+              "postal_code" : {
+                "type" : "keyword"
+              },
+              "phone_extension" : {
+                "type" : "keyword"
+              },
+              "fax" : {
+                "type" : "keyword"
+              },
+              "fax_extension" : {
+                "type" : "keyword"
+              },
+              "city" : {
+                "type" : "keyword"
+              },
+              "country" : {
+                "type" : "keyword"
+              },
+              "email" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "name" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "organization" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "phone" : {
+                "type" : "keyword"
+              },
+              "province" : {
+                "type" : "keyword"
+              },
+              "street" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              }
+            }
+          },
+          "billing" : {
+            "properties" : {
+              "id" : {
+                "type" : "keyword"
+              },
+              "postal_code" : {
+                "type" : "keyword"
+              },
+              "phone_extension" : {
+                "type" : "keyword"
+              },
+              "fax" : {
+                "type" : "keyword"
+              },
+              "fax_extension" : {
+                "type" : "keyword"
+              },
+              "city" : {
+                "type" : "keyword"
+              },
+              "country" : {
+                "type" : "keyword"
+              },
+              "email" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "name" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "organization" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              },
+              "phone" : {
+                "type" : "keyword"
+              },
+              "province" : {
+                "type" : "keyword"
+              },
+              "street" : {
+                "type" : "text",
+                "fields" : {
+                  "keyword" : {
+                    "type" : "keyword",
+                    "ignore_above" : 256
+                  }
+                },
+                "analyzer" : "ik_smart"
+              }
+            }
+          },
+          "collected_timestamp" : {
+            "type" : "date"
+          }
         },
         "cert_hash" : {
           "type" : "keyword"

@@ -108,6 +108,26 @@ class ElasticsearchConn:
             logger.error(e)
             raise
 
+    def search_and_terms(self, index, query_string, terms_fields, terms_size):
+        query_body = {
+            "size": 0,
+            "query": {
+                "query_string": {
+                    "query": query_string
+                }
+            },
+            "aggs": {}
+        }
+        for i, field in terms_fields:
+            query_body["aggs"][str(i)] = {"terms":{"field":field, "size":terms_size, "order":{"_count":"desc"}}}
+        try:
+            res = self.search(index, query_body)
+            return [e[key]["buckets"] for key in res["aggregations"]]
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            logger.error(e)
+            raise
+
     def scan_by_query_string(self, index, query_string):
         return scan(client=self.es, index=index, query={"query":{"query_string":{"query":query_string}}})
 
