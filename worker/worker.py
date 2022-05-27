@@ -11,14 +11,12 @@ from worker.ip import ip_update
 from worker.domain import domain_update
 from worker.organization import organization_update
 from worker.cert import cert_parse
-from worker.bakup_wide_table import bakup_wide_table
 
 worker_func = {
     "ip": ip_update,
     "domain": domain_update,
     "organization": organization_update,
-    "cert": cert_parse,
-    "bakup_wide_table": bakup_wide_table
+    "cert": cert_parse
 }
 
 def worker():
@@ -48,17 +46,11 @@ def worker():
         if _count % 1000 == 0:
             logger.info(f"Worker finished task num: {_count}")
 
-def timeloop_worker():
-    for work_config in settings.timeloop:
-        t = timeloop(work_config)
-        t.start()
-
 
 def start_worker(worker_num):
     process = []
     for i in range(worker_num):
         process.append(Process(target=worker))
-    process.append(Process(target=timeloop_worker))
     for p in process:
         p.start()
     for p in process:

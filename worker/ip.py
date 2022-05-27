@@ -1,11 +1,10 @@
-from utils.logger import logger
-
 from service.db.elasticsearch import es
 from utils.config import settings
 from utils.logger import logger
 from utils.time import get_current_time_string, compare_time_string
 
 IP_WIDE_TABLE_NAME = "squint_ip"
+IP_CHINA_DNS_TABLE_NAME = "china_dns_info"
 
 def new_ip_wide_table_record():
     return {
@@ -38,30 +37,32 @@ def update_ip_port(ip, exist_record, tags):
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: ip_update cannot find record(type:ip_port, ip:{ip})")
     update_data = assamble_ip_update_data(ip, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    if not tags:
+        tags = []
     update_data.update(
-            {"ports": res["hits"]["hits"][0]["_source"]["ports"]}
+            {
+                "ports": res["hits"]["hits"][0]["_source"]["ports"],
+                "tags": tags
+            }
         )
     return update_data
 
 def update_ip_cert(ip, exist_record, tags):
-    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip_protocol", f"ip:{ip}", "insert_raw_table_timestamp")
+    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip", f"ip:{ip}", "update_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: ip_update cannot find record(type:ip_cert, ip:{ip})")
-    update_data = assamble_ip_update_data(ip, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    update_data = assamble_ip_update_data(ip, res["hits"]["hits"][0]["_source"]["update_timestamp"], exist_record)
     cert_hash = []
-    protocol_res = es.terms_and_top_hit(index=settings.elasticsearch.index_prefix + "ip_port", 
-                                        query_string=f"ip:({' OR '.join(ports_res['hits']['hits'][0]['_source']['ports'])}) AND ip:{ip}",
-                                        terms_size=65536,
-                                        terms_field="port",
-                                        top_hits_size=1,
-                                        script_field="insert_raw_table_timestamp"
-                                        )
-    protocols = [delete_name_dict(e[0]["_source"], "ip") for e in protocol_res]
-    for p in protocols:
+    for p in res["hits"]["hits"][0]["_source"]["protocols"]:
         if "cert_hash" in p["data"] and p["data"]["cert_hash"] != "" and p["data"]["cert_hash"] is not None:
             cert_hash.append(p["data"]["cert_hash"])
+    if not tags:
+        tags = []
     update_data.update(
-            {"cert_hash": cert_hash}
+            {
+                "cert_hash": cert_hash,
+                "tags": tags
+            }
         )
     return update_data
 
@@ -79,12 +80,15 @@ def update_ip_ptr(ip, exist_record, tags):
         if compare_time_string(timestamp, revers_domains_res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], "time"):
             timestamp = revers_domains_res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"]
     update_data = assamble_ip_update_data(ip, timestamp, exist_record)
+    if not tags:
+        tags = []
     update_data.update(
             {
                 "domains": {
                     "ptr": ptr,
                     "reverse_domains": reverse_domains
-                }
+                },
+                "tags": tags
             }
         )
     return update_data
@@ -93,8 +97,8 @@ def update_ip_protocol(ip, exist_record, tags):
     ports_res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip_port", f"ip:{ip}", "insert_raw_table_timestamp")
     if len(ports_res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: ip_update cannot find record(type:ip_port, ip:{ip})")
-    protocol_res = es.terms_and_top_hit(index=settings.elasticsearch.index_prefix + "ip_port", 
-                                        query_string=f"ip:({' OR '.join([str(p) for p in ports_res['hits']['hits'][0]['_source']['ports']])}) AND ip:{ip}",
+    protocol_res = es.terms_and_top_hit(index=settings.elasticsearch.index_prefix + "ip_protocol", 
+                                        query_string=f"port:({' OR '.join([str(p) for p in ports_res['hits']['hits'][0]['_source']['ports']])}) AND ip:{ip}",
                                         terms_size=65536,
                                         terms_field="port",
                                         top_hits_size=1,
@@ -102,14 +106,37 @@ def update_ip_protocol(ip, exist_record, tags):
                                         )
     protocols = [delete_name_dict(e[0]["_source"], "ip") for e in protocol_res]
     update_data = assamble_ip_update_data(ip, ports_res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    if not tags:
+        tags = []
     update_data.update(
-            {"protocols": protocols}
+            {
+                "protocols": protocols,
+                "tags": tags
+            }
         )
     return update_data
 
 def update_ip_dns(ip, exist_record, tags):
-    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "ip_ptr", f"ip:{ip}", "parsed_date")
-
+    res = es.search_latest_by_query_string(IP_CHINA_DNS_TABLE_NAME, f"ip:{ip} AND parsed_date:{get_current_time_string('date', '%Y%m%d')}")
+    if not tags:
+        tags = []
+    dns_type = []
+    dns_version = ""
+    if res["hits"]["hits"]:
+        for dns in ["open", "hidden", "forward", "morbid", "recursive", "edns", "dnssec"]:
+            if res["hits"]["hits"][0]["_source"][dns] == "1":
+                tags += [f"{dns}_dns"]
+                dns_type += [dns]
+        if "version" in res["hits"]["hits"][0]["_source"]:
+            dns_version = res["hits"]["hits"][0]["_source"]["version"].split("|")[0]
+    update_data = assamble_ip_update_data(ip, get_current_time_string("time"), exist_record)
+    update_data.update(
+            {
+                "dns": {"type": dns_type, "version": dns_version},
+                "tags": tags
+            }
+        )
+    return update_data
 
 UPDARE_IP_FUNC = {
     "ip_port": update_ip_port,

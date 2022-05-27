@@ -52,6 +52,11 @@ class RedisQueue:
         self.produce(task)
         logger.warning(f"REPRODUCE TASK: {task}")
 
+    def clear_all(self):
+        delete_list = [settings.redis.tasks_list_name, settings.redis.distributed_list_name, settings.redis.finished_list_name, settings.redis.aborted_list_name]
+        for l in delete_list:
+            e = self.redis.delete(l)
+        logger.info(f"DELETED REDIS LIST: {','.join(delete_list)}")
 
 redis_queue = RedisQueue(host=settings.redis_auth.host, port=settings.redis_auth.port, password=settings.redis_auth.password)
 

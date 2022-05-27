@@ -42,8 +42,13 @@ def update_domain_cert(domain, exist_record, tags):
     cert_hash = ""
     if "cert_hash" in res["hits"]["hits"][0]["_source"]["https"]:
         cert_hash = res["hits"]["hits"][0]["_source"]["https"][0]["cert_hash"]
+    if not tags:
+        tags = []
     update_data.update(
-            {"cert_hash": cert_hash}
+            {
+                "cert_hash": cert_hash,
+                "tags": tags
+            }
         )
     return update_data
 
@@ -88,8 +93,13 @@ def update_domain_rr(domain, exist_record, tags):
     for e in res["hits"]["hits"][0]["_source"]["A"]:
         delete_name_dict(e, "id")
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    if not tags:
+        tags = []
     update_data.update(
-            {"rr": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain")}
+            {
+                "rr": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
+                "tags": tags
+            }
         )
     return update_data
 
@@ -98,8 +108,13 @@ def update_domain_subdomain(domain, exist_record, tags):
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_subdomain, domain:{domain})")
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    if not tags:
+        tags = []
     update_data.update(
-            {"subdomains": res["hits"]["hits"][0]["_source"]["subdomains"]}
+            {
+                "subdomains": res["hits"]["hits"][0]["_source"]["subdomains"],
+                "tags": tags
+            }
         )
     return update_data
 
@@ -108,8 +123,13 @@ def update_domain_whois(domain, exist_record, tags):
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_whois, domain:{domain})")
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
+    if not tags:
+        tags = []
     update_data.update(
-            {"whois": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain")}
+            {
+                "whois": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
+                "tags": tags
+            }
         )
     return update_data
 

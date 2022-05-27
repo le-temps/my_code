@@ -31,10 +31,16 @@ def produce_update_task_by_query(q, t):
     from scripts.produce_update_task_by_query import produce_update_task_by_query
     produce_update_task_by_query(t, q)
 
+@click.command()
+def clear_redis_queue():
+    from scripts.clear_redis_queue import clear_redis_queue
+    clear_redis_queue()
+
 cli.add_command(service)
 cli.add_command(worker)
 cli.add_command(bakup_index_by_date)
 cli.add_command(produce_update_task_by_query)
+cli.add_command(clear_redis_queue)
 
 if __name__ == "__main__":
     cli()
