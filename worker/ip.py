@@ -2,6 +2,7 @@ from service.db.elasticsearch import es
 from utils.config import settings
 from utils.logger import logger
 from utils.time import get_current_time_string, compare_time_string
+from utils.validator import valid_ip
 
 IP_WIDE_TABLE_NAME = "squint_ip"
 IP_CHINA_DNS_TABLE_NAME = "china_dns_info"
@@ -117,7 +118,7 @@ def update_ip_protocol(ip, exist_record, tags):
     return update_data
 
 def update_ip_dns(ip, exist_record, tags):
-    res = es.search_latest_by_query_string(IP_CHINA_DNS_TABLE_NAME, f"ip:{ip} AND parsed_date:{get_current_time_string('date', '%Y%m%d')}")
+    res = es.search_latest_by_query_string(IP_CHINA_DNS_TABLE_NAME, f"ip:{ip} AND parsed_date:{get_current_time_string('date', '%Y%m%d')}", "parsed_date")
     if not tags:
         tags = []
     dns_type = []
@@ -125,17 +126,27 @@ def update_ip_dns(ip, exist_record, tags):
     if res["hits"]["hits"]:
         for dns in ["open", "hidden", "forward", "morbid", "recursive", "edns", "dnssec"]:
             if res["hits"]["hits"][0]["_source"][dns] == "1":
-                tags += [f"{dns}_dns"]
+                if f"{dns}_dns" not in tags:
+                    tags += [f"{dns}_dns"]
                 dns_type += [dns]
         if "version" in res["hits"]["hits"][0]["_source"]:
             dns_version = res["hits"]["hits"][0]["_source"]["version"].split("|")[0]
     update_data = assamble_ip_update_data(ip, get_current_time_string("time"), exist_record)
-    update_data.update(
-            {
-                "dns": {"type": dns_type, "version": dns_version},
-                "tags": tags
-            }
-        )
+    if dns_type:
+        update_data.update(
+                {
+                    "dns": {"type": dns_type, "version": dns_version},
+                    "tags": tags
+                }
+            )
+    else:
+        tags = [e for e in tags if "dns" not in e]
+        update_data.update(
+                {
+                    "dns": {},
+                    "tags": tags
+                }
+            )
     return update_data
 
 UPDARE_IP_FUNC = {
@@ -147,6 +158,8 @@ UPDARE_IP_FUNC = {
 }
 
 def ip_update_data(ip, type):
+    if not valid_ip(ip):
+        raise Exception(f"Invalid IP: {ip}!")
     if type not in UPDARE_IP_FUNC:
         logger.error(f"ERROR: ip_update input arg type not in IP_TYPE({','.join(UPDARE_IP_FUNC.keys())}).")
     res = es.search_latest_by_query_string(IP_WIDE_TABLE_NAME, f"ip:{ip}", "update_timestamp")

@@ -59,11 +59,11 @@ async def get_search(field: str, page: int, rows: int, input_data: SearchInput, 
             query_string = input_data.keyword
         else:
             query_string = "*"
-        res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + field, query_string=query_string, page * rows, rows, source=IMPORTANT[field])
+        res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + field, query_string=query_string, from_num=page * rows, size=rows, source=IMPORTANT[field])
         if len(res["hits"]["hits"]) > 0:
-            return DetailResponse(state=800, {"total":len(res["hits"]["hits"][0]["_source"])}, payload=remove_object_field(res["hits"]["hits"][0]["_source"], "insert_raw_table_timestamp"))
+            return DetailResponse(state=800, meta={"total":len(res["hits"]["hits"][0]["_source"])}, payload=remove_object_field(res["hits"]["hits"][0]["_source"], "insert_raw_table_timestamp"))
         else:
-            return DetailResponse(state=800, {"total":0}, payload={})
+            return DetailResponse(state=800, meta={"total":0}, payload={})
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(e)
@@ -84,7 +84,7 @@ async def get_search_stats(field: str, input_data: SearchInput, response: Respon
             query_string = "*"
         # domain stats 
         stats_results = {}
-        terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + field, query_string=query_string, STATS[field], 10)
+        terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + field, query_string=query_string, terms_fields=STATS[field], terms_sizes=10)
         for i, key in enumerate(STATS[field]):
             stats_results[key] = terms_res[i]
         if len(res["hits"]["hits"]) > 0:
@@ -113,23 +113,20 @@ def get_detail(type, value, response, token):
         if len(res["hits"]["hits"]) > 0:
             if type == "ip":
                 # ip_cert
-                for protocol in res["hits"]["hits"][0]["_source"]["protocols"]:
-                    if protocol["protocol"] == "https" and cert_hash in protocol["data"]:
-                        cert_res = es.search_by_query_string(index=settings.elasticsearch.index_prefix + "cert", query_string=f"cert:{protocol["data"]["cert_hash"]}")
-                        res["hits"]["hits"][0]["_source"]["certs"] = [cert_res["hits"]["hits"][0]["_source"]]
-                        break
+                for cert in res["hits"]["hits"][0]["_source"]["cert_hash"]:
+                    cert_res = es.search_by_query_string(index=settings.elasticsearch.index_prefix + "cert", query_string=f"cert:{cert}")
+                    res["hits"]["hits"][0]["_source"]["certs"] = [cert_res["hits"]["hits"][0]["_source"]]
             if type == "domain":
                 # domain_cert
-                if res["hits"]["hits"][0]["_source"]["web"] and res["hits"]["hits"][0]["_source"]["web"]["https"] and cert_hash in res["hits"]["hits"][0]["_source"]["web"]["https"][0]:
-                    cert_res = es.search_by_query_string(index=settings.elasticsearch.index_prefix + "cert", query_string=f"cert:{res["hits"]["hits"][0]["_source"]["web"]["https"][0]["cert_hash"]}")
+                for cert in res["hits"]["hits"][0]["_source"]["cert_hash"]:
+                    cert_res = es.search_by_query_string(index=settings.elasticsearch.index_prefix + "cert", query_string=f"cert:{cert}")
                     res["hits"]["hits"][0]["_source"]["certs"] = [cert_res["hits"]["hits"][0]["_source"]]
-                    break
                 # domain_subdomain
-                subdomains_res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + "domain", query_string=" OR ".join([f"domain:{domain}" for domain in res["hits"]["hits"][0]["_source"]["subdomains"]]), 0, 10, source=IMPORTANT["domain"])
+                subdomains_res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + "domain", query_string=" OR ".join([f"domain:{domain}" for domain in res["hits"]["hits"][0]["_source"]["subdomains"]]), from_num=0, size=10, source=IMPORTANT["domain"])
                 res["hits"]["hits"][0]["_source"]["subdomains"] = [e["_source"] for e in subdomains_res["hits"]["hits"]]
             if type == "organization":
                 # organization_subdomain
-                domains_res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + "domain", query_string=" OR ".join([f"domain:{domain}" for domain in res["hits"]["hits"][0]["_source"]["domains"]]), 0, 10, source=IMPORTANT["domain"])
+                domains_res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + "domain", query_string=" OR ".join([f"domain:{domain}" for domain in res["hits"]["hits"][0]["_source"]["domains"]]), from_num=0, size=10, source=IMPORTANT["domain"])
                 res["hits"]["hits"][0]["_source"]["domains"] = [e["_source"] for e in domains_res["hits"]["hits"]]
             return DetailResponse(state=800, payload=remove_object_field(res["hits"]["hits"][0]["_source"], "insert_raw_table_timestamp"))
         else:

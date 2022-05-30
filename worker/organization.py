@@ -27,7 +27,7 @@ def assamble_organization_update_data(organization, insert_raw_table_timestamp, 
         return {"organization":organization, "create_timestamp":insert_raw_table_timestamp, "update_timestamp":insert_raw_table_timestamp}
 
 def update_organization_businessinfo(organization, exist_record, tags):
-    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "organization_businessinfo", f"name:{organization}", "insert_raw_table_timestamp")
+    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "organization_businessinfo", f"name:\"{organization}\"", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: organization_update cannot find record(type:organization_businessinfo, name:{organization})")
     update_data = assamble_organization_update_data(organization, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
@@ -48,7 +48,7 @@ def update_organization_businessinfo(organization, exist_record, tags):
     return update_data
 
 def update_organization_domain(organization, exist_record, tags):
-    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "organization_domain", f"company:{organization}", "insert_raw_table_timestamp")
+    res = es.search_latest_by_query_string(settings.elasticsearch.index_prefix + "organization_domain", f"company:\"{organization}\"", "insert_raw_table_timestamp")
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: organization_update cannot find record(type:organization_domain, name:{organization})")
     update_data = assamble_organization_update_data(organization, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
@@ -70,7 +70,7 @@ UPDATE_ORGANIZATION_FUNC = {
 def organization_update_data(name, type):
     if type not in UPDATE_ORGANIZATION_FUNC:
         logger.error(f"ERROR: organization_update input arg type not in ORGANIZATION_TYPE({','.join(UPDATE_ORGANIZATION_FUNC.keys())}).")
-    res = es.search_latest_by_query_string(ORGANIZATION_WIDE_TABLE_NAME, f"organization:{name}", "update_timestamp")
+    res = es.search_latest_by_query_string(ORGANIZATION_WIDE_TABLE_NAME, f"organization.keyword:\"{name}\"", "update_timestamp")
     if len(res["hits"]["hits"]) == 0:
         update_data = new_organization_wide_table_record()
         update_data.update(UPDATE_ORGANIZATION_FUNC[type](name, False, None))

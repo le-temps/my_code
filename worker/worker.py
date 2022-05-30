@@ -20,7 +20,6 @@ worker_func = {
 }
 
 def worker():
-    _count = 0
     while True:
         logger.debug("尝试从redis获取更新任务...")
         task = json.loads(redis_queue.consume())
@@ -42,9 +41,6 @@ def worker():
                 redis_queue.reproduce(json.dumps(task))
             except:
                 pass
-        _count += 1
-        if _count % 1000 == 0:
-            logger.info(f"Worker finished task num: {_count}")
 
 
 def start_worker(worker_num):

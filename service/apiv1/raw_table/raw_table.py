@@ -61,6 +61,7 @@ async def insert_data_to_raw_table(input_data: InputData, response: Response, to
             tasks.append({"source_index_type":input_data.type, "destination_index_type":input_data.type.split("_")[0], "value":get_task_value(e, VALUE_NAME_MAPPING_DICT[input_data.type]), "try_num":0, "create_time":insert_time})
         tasks = [json.dumps(t) for t in tasks if t["value"] != "" and t["value"] is not None]
         redis_queue.produce(*tasks)
+        return InputResponse(status=200, message="OK.")
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(e)

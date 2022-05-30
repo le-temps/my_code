@@ -1,6 +1,7 @@
 import click
 import uvicorn
 from utils.config import settings
+from utils.logger import logger
 
 @click.group()
 def cli():
@@ -36,11 +37,20 @@ def clear_redis_queue():
     from scripts.clear_redis_queue import clear_redis_queue
     clear_redis_queue()
 
+@click.command()
+@click.option("--m", type=str, help="test module.")
+def test(m):
+    from tests import test_module
+    if m not in test_module:
+        logger.error(f"Try to test unknown module: {m}")
+    test_module[m]()
+
 cli.add_command(service)
 cli.add_command(worker)
 cli.add_command(bakup_index_by_date)
 cli.add_command(produce_update_task_by_query)
 cli.add_command(clear_redis_queue)
+cli.add_command(test)
 
 if __name__ == "__main__":
     cli()
