@@ -3,7 +3,6 @@ from utils.logger import logger
 from service.db.elasticsearch import es
 from utils.config import settings
 from utils.time import get_current_time_string
-from utils.validator import valid_domain
 
 DOMAIN_WIDE_TABLE_NAME = "squint_domain"
 CERT_WIDE_TABLE_NAME = "squint_cert"
@@ -19,7 +18,7 @@ def new_domain_wide_table_record():
         "web":{},
         "snapshot":{},
         "whois":{},
-        "cert_hash":"",
+        "cert_hash":None,
         "create_timestamp":"",
         "update_timestamp":"",
         "tags":[]
@@ -40,8 +39,8 @@ def update_domain_cert(domain, exist_record, tags):
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_cert, domain:{domain})")
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
-    cert_hash = ""
-    if "cert_hash" in res["hits"]["hits"][0]["_source"]["https"]:
+    cert_hash = None
+    if "cert_hash" in res["hits"]["hits"][0]["_source"]["https"][-1]:
         cert_hash = res["hits"]["hits"][0]["_source"]["https"][0]["cert_hash"]
     if not tags:
         tags = []

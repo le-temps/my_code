@@ -8,10 +8,29 @@ from utils.config import settings
 from utils.logger import logger
 from utils.time import get_current_time_string
 
+
+#### trim result
+def trim_important_result(object):
+    if type(object) is dict:
+        for key in object:
+            object[key] = trim_important_result(object[key])
+        return object
+    elif type(object) is list:
+        if type(object[0]) is dict:
+            key = list(object[0].keys())[0]
+            if key == "title":
+                object = [object[-1]]
+            return {key:list(set([e[key] for e in object]))}
+        else:
+            return object
+    else:
+        return object
+
 IMPORTANT = {
     "domain": ["domain", "icp.main_licence", "icp.unit_name", "psr.record_id", "psr.unit_name", "rr.A.ip", "certs.cert", "whois.registrant.organization", "web.http.title", "web.https.title"],
-    "ip": ["ip", "geo.country", "geo.prov", "geo.city", "geo.district", "domains.reverse_domains", "protocols.port", "protocols.protocol", "dns.type", "certs.cert"],
-    "organization": ["organization", "info.business_status", "info.legal_person", "info.registered_capital", "info.province", "info.city", "info.district"]
+    "ip": ["ip", "ports", "geo.country", "geo.prov", "geo.city", "geo.district", "domains.reverse_domains", "protocols.port", "protocols.protocol", "dns.type", "certs.cert"],
+    "organization": ["organization", "info.business_status", "info.legal_person", "info.registered_capital", "info.province", "info.city", "info.district"],
+    "cert": ["cert", "issuer", "subject", "subject_dn", "validity", "signature_algorithm.key_algorithm"]
 }
 
 STATS = {
@@ -38,14 +57,14 @@ def remove_object_field(object, field_name):
 #### wide_table search
 #TODO add wide_table search api
 class SearchInput(BaseModel):
-    keyword: str
-    filters: str
+    keyword: Optional[str] = "*"
+    filters: Optional[str] = "*"
 
 class SearchResponse(BaseModel):
     state: str
-    meta: dict
-    payload: dict = []
-    msg: str = ""
+    meta: Optional[dict] = None
+    payload: Optional[list] = None
+    msg: Optional[str]
 
 @router.post("/api/v1/search/{field}", response_model=SearchResponse, tags=["wide_table"])
 async def get_search(field: str, page: int, rows: int, input_data: SearchInput, response: Response, token: Optional[str]=Header(None)):
@@ -59,16 +78,19 @@ async def get_search(field: str, page: int, rows: int, input_data: SearchInput, 
             query_string = input_data.keyword
         else:
             query_string = "*"
+        if page <= 0 or page >= 1000 or rows <= 0 or rows >= 1000:
+            response.status_code=400
+            return SearchResponse(status=900, msg="Input data not correct.")
         res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + field, query_string=query_string, from_num=page * rows, size=rows, source=IMPORTANT[field])
         if len(res["hits"]["hits"]) > 0:
-            return DetailResponse(state=800, meta={"total":len(res["hits"]["hits"][0]["_source"])}, payload=remove_object_field(res["hits"]["hits"][0]["_source"], "insert_raw_table_timestamp"))
+            return SearchResponse(state=800, meta={"total": res["aggregations"]["count"]["value"]}, payload=[trim_important_result(remove_object_field(e["_source"], "insert_raw_table_timestamp")) for e in res["hits"]["hits"]])
         else:
-            return DetailResponse(state=800, meta={"total":0}, payload={})
+            return SearchResponse(state=800, meta={"total":0}, payload={})
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(e)
         response.status_code=500
-        return DetailResponse(state=910, msg=str(e))
+        return SearchResponse(state=910, msg=str(e))
 
 @router.post("/api/v1/search/{field}/stats", response_model=SearchResponse, tags=["wide_table"])
 async def get_search_stats(field: str, input_data: SearchInput, response: Response, token: Optional[str]=Header(None)):
@@ -88,14 +110,14 @@ async def get_search_stats(field: str, input_data: SearchInput, response: Respon
         for i, key in enumerate(STATS[field]):
             stats_results[key] = terms_res[i]
         if len(res["hits"]["hits"]) > 0:
-            return DetailResponse(state=800, payload=stats_results)
+            return SearchResponse(state=800, payload=stats_results)
         else:
-            return DetailResponse(state=800, payload={})
+            return SearchResponse(state=800, payload={})
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(e)
         response.status_code=500
-        return DetailResponse(state=910, msg=str(e))
+        return SearchResponse(state=910, msg=str(e))
 
 ##### wide_table detail
 class DetailResponse(BaseModel):
@@ -113,21 +135,20 @@ def get_detail(type, value, response, token):
         if len(res["hits"]["hits"]) > 0:
             if type == "ip":
                 # ip_cert
-                for cert in res["hits"]["hits"][0]["_source"]["cert_hash"]:
-                    cert_res = es.search_by_query_string(index=settings.elasticsearch.index_prefix + "cert", query_string=f"cert:{cert}")
-                    res["hits"]["hits"][0]["_source"]["certs"] = [cert_res["hits"]["hits"][0]["_source"]]
+                cert_res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + "cert", query_string=" OR ".join([f"cert:{cert}" for cert in res["hits"]["hits"][0]["_source"]["cert_hash"]]), from_num=0, size=10, source=IMPORTANT["cert"])
+                res["hits"]["hits"][0]["_source"]["certs"] = [e["_source"] for e in cert_res["hits"]["hits"]]
             if type == "domain":
                 # domain_cert
-                for cert in res["hits"]["hits"][0]["_source"]["cert_hash"]:
-                    cert_res = es.search_by_query_string(index=settings.elasticsearch.index_prefix + "cert", query_string=f"cert:{cert}")
-                    res["hits"]["hits"][0]["_source"]["certs"] = [cert_res["hits"]["hits"][0]["_source"]]
+                if res['hits']['hits'][0]['_source']['cert_hash']:
+                    cert_res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + "cert", query_string=f"cert:{res['hits']['hits'][0]['_source']['cert_hash']}", from_num=0, size=10, source=IMPORTANT["cert"])
+                    res["hits"]["hits"][0]["_source"]["cert"] = cert_res["hits"]["hits"][0]["_source"]
                 # domain_subdomain
                 subdomains_res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + "domain", query_string=" OR ".join([f"domain:{domain}" for domain in res["hits"]["hits"][0]["_source"]["subdomains"]]), from_num=0, size=10, source=IMPORTANT["domain"])
-                res["hits"]["hits"][0]["_source"]["subdomains"] = [e["_source"] for e in subdomains_res["hits"]["hits"]]
+                res["hits"]["hits"][0]["_source"]["subdomains"] = [trim_important_result(e["_source"]) for e in subdomains_res["hits"]["hits"]]
             if type == "organization":
                 # organization_subdomain
                 domains_res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + "domain", query_string=" OR ".join([f"domain:{domain}" for domain in res["hits"]["hits"][0]["_source"]["domains"]]), from_num=0, size=10, source=IMPORTANT["domain"])
-                res["hits"]["hits"][0]["_source"]["domains"] = [e["_source"] for e in domains_res["hits"]["hits"]]
+                res["hits"]["hits"][0]["_source"]["domains"] = [trim_important_result(e["_source"]) for e in domains_res["hits"]["hits"]]
             return DetailResponse(state=800, payload=remove_object_field(res["hits"]["hits"][0]["_source"], "insert_raw_table_timestamp"))
         else:
             return DetailResponse(state=800, payload={})
