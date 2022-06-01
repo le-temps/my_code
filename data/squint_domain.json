@@ -280,14 +280,7 @@ PUT /squint_domain
                   "analyzer" : "ik_smart"
                 },
                 "server" : {
-                  "type" : "text",
-                  "fields" : {
-                    "keyword" : {
-                      "type" : "keyword",
-                      "ignore_above" : 256
-                    }
-                  },
-                  "analyzer" : "ik_smart"
+                  "type" : "keyword"
                 },
                 "keywords" : {
                   "type" : "keyword"

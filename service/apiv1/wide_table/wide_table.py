@@ -34,7 +34,7 @@ IMPORTANT = {
 }
 
 STATS = {
-    "domain": ["domain.web.http.server", "domain.web.https.server"],
+    "domain": ["web.http.server", "web.https.server"],
     "ip": ["ports", "protocols.protocol", "dns.type"],
     "organization": ["info.business_status", "info.type", "info.industry"]
 }
@@ -54,16 +54,56 @@ def remove_object_field(object, field_name):
                 remove_object_field(e, field_name)
     return object
 
+#### main_page
+class TrendResponse(BaseModel):
+    state: int
+    meta: Optional[dict] = None
+    payload: Optional[dict] = None
+    msg: Optional[str]
+
+#@router.post("/api/v1/trend/{field}", response_model=SearchResponse, tags=["wide_table"])
+#async def get_search(field: str, page: int, rows: int, input_data: SearchInput, response: Response, token: Optional[str]=Header(None)):
+#    if token != settings.service_auth.token:
+#        response.status_code=401
+#        return SearchResponse(state=903, msg="Authentication Failed")
+#    try:
+#        if input_data.filters:
+#            query_string = input_data.filters
+#        elif input_data.keyword:
+#            query_string = input_data.keyword
+#        else:
+#            query_string = "*"
+#        if page <= 0 or page >= 1000 or rows <= 0 or rows >= 1000:
+#            response.status_code=400
+#            return SearchResponse(status=900, msg="Input data not correct.")
+#        res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + field, query_string=query_string, from_num=page * rows, size=rows, source=IMPORTANT[field])
+#        if len(res["hits"]["hits"]) > 0:
+#            return SearchResponse(state=800, meta={"total": res["aggregations"]["count"]["value"]}, payload=[trim_important_result(remove_object_field(e["_source"], "insert_raw_table_timestamp")) for e in res["hits"]["hits"]])
+#        else:
+#            return SearchResponse(state=800, meta={"total":0}, payload={})
+#    except Exception as e:
+#        logger.error(traceback.format_exc())
+#        logger.error(e)
+#        response.status_code=500
+#        return SearchResponse(state=910, msg=str(e))
+
+
+
 #### wide_table search
-#TODO add wide_table search api
 class SearchInput(BaseModel):
     keyword: Optional[str] = "*"
     filters: Optional[str] = "*"
 
 class SearchResponse(BaseModel):
-    state: str
+    state: int
     meta: Optional[dict] = None
     payload: Optional[list] = None
+    msg: Optional[str]
+
+class SearchStatsResponse(BaseModel):
+    state: int
+    meta: Optional[dict] = None
+    payload: Optional[dict] = None
     msg: Optional[str]
 
 @router.post("/api/v1/search/{field}", response_model=SearchResponse, tags=["wide_table"])
@@ -92,11 +132,11 @@ async def get_search(field: str, page: int, rows: int, input_data: SearchInput, 
         response.status_code=500
         return SearchResponse(state=910, msg=str(e))
 
-@router.post("/api/v1/search/{field}/stats", response_model=SearchResponse, tags=["wide_table"])
+@router.post("/api/v1/search/{field}/stats", response_model=SearchStatsResponse, tags=["wide_table"])
 async def get_search_stats(field: str, input_data: SearchInput, response: Response, token: Optional[str]=Header(None)):
     if token != settings.service_auth.token:
         response.status_code=401
-        return SearchResponse(state=903, msg="Authentication Failed")
+        return SearchStatsResponse(state=903, msg="Authentication Failed")
     try:
         if input_data.filters:
             query_string = input_data.filters
@@ -106,22 +146,22 @@ async def get_search_stats(field: str, input_data: SearchInput, response: Respon
             query_string = "*"
         # domain stats 
         stats_results = {}
-        terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + field, query_string=query_string, terms_fields=STATS[field], terms_sizes=10)
+        terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + field, query_string=query_string, terms_fields=STATS[field], terms_size=10)
         for i, key in enumerate(STATS[field]):
             stats_results[key] = terms_res[i]
-        if len(res["hits"]["hits"]) > 0:
-            return SearchResponse(state=800, payload=stats_results)
+        if len(terms_res) > 0:
+            return SearchStatsResponse(state=800, payload=stats_results)
         else:
-            return SearchResponse(state=800, payload={})
+            return SearchStatsResponse(state=800, payload={})
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(e)
         response.status_code=500
-        return SearchResponse(state=910, msg=str(e))
+        return SearchStatsResponse(state=910, msg=str(e))
 
 ##### wide_table detail
 class DetailResponse(BaseModel):
-    state: str
+    state: int
     payload: dict = []
     msg: str = ""
 

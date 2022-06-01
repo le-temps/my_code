@@ -17,11 +17,21 @@ def test_service_wide():
 
     # 2. wide_table search
     def wide_table_search():
-        res = requests.post("http://10.245.146.64:27000/api/v1/search/organization?page=1&rows=10", headers=headers, data=json.dumps({"keyword": "*"}))
+        res = requests.post("http://10.245.146.64:27000/api/v1/search/organization?page=1&rows=10", headers=headers, json={"keyword": "*"})
         print(res.text)
-        res = requests.post("http://10.245.146.64:27000/api/v1/search/ip?page=1&rows=10", headers=headers, data=json.dumps({"keyword": "*"}))
+        res = requests.post("http://10.245.146.64:27000/api/v1/search/ip?page=1&rows=10", headers=headers, json={"keyword": "*"})
         print(res.text)
-        res = requests.post("http://10.245.146.64:27000/api/v1/search/domain?page=1&rows=10", headers=headers, data=json.dumps({"keyword": "*"}))
+        res = requests.post("http://10.245.146.64:27000/api/v1/search/domain?page=1&rows=10", headers=headers, json={"keyword": "*"})
         print(res.text)
 
-    wide_table_search()
+    # 3. wide_table search detail
+    def wide_table_search_detail():
+        res = requests.post("http://10.245.146.64:27000/api/v1/search/organization/stats?page=1&rows=10", headers=headers, json={"keyword": "*"})
+        print(res.text)
+        res = requests.post("http://10.245.146.64:27000/api/v1/search/ip/stats?page=1&rows=10", headers=headers, json={"keyword": "*"})
+        print(res.text)
+        res = requests.post("http://10.245.146.64:27000/api/v1/search/domain/stats?page=1&rows=10", headers=headers, json={"keyword": "*"})
+        print(res.text)
+
+    #wide_table_search()
+    wide_table_search_detail()

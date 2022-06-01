@@ -57,10 +57,9 @@ def update_domain_icp(domain, exist_record, tags):
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_icp, domain:{domain})")
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
-    if tags:
-        tags += ["icp"]
-    else:
+    if not tags:
         tags = []
+    tags += ["icp"]
     update_data.update(
             {
                 "icp": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
@@ -74,10 +73,9 @@ def update_domain_psr(domain, exist_record, tags):
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_psr, domain:{domain})")
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
-    if tags:
-        tags += ["psr"]
-    else:
+    if not tags:
         tags = []
+    tags += ["psr"]
     update_data.update(
             {
                 "psr": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
@@ -138,17 +136,16 @@ def update_domain_web(domain, exist_record, tags):
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_web, domain:{domain})")
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
-    if tags:
-        if res["hits"]["hits"][0]["_source"]["http"]:
-            tags += ["http"]
-        if res["hits"]["hits"][0]["_source"]["https"]:
-            tags += ["https"]
-        if 200 in ([e["status_code"] for e in res["hits"]["hits"][0]["_source"]["http"]] + [e["status_code"] for e in res["hits"]["hits"][0]["_source"]["https"]]):
-            tags += ["access_successful"]
-        else:
-            tags += ["access_failed"]
-    else:
+    if not tags:
         tags = []
+    if res["hits"]["hits"][0]["_source"]["http"]:
+        tags += ["http"]
+    if res["hits"]["hits"][0]["_source"]["https"]:
+        tags += ["https"]
+    if 200 in ([e["status_code"] for e in res["hits"]["hits"][0]["_source"]["http"]] + [e["status_code"] for e in res["hits"]["hits"][0]["_source"]["https"]]):
+        tags += ["access_successful"]
+    else:
+        tags += ["access_failed"]
     update_data.update(
             {
                 "web": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
@@ -183,15 +180,16 @@ def update_domain_snapshot(domain, exist_record, tags):
             }
         )
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
-    if tags:
-        if remote_address_ip is not None and remote_address_ip != "" and res["hits"]["hits"][0]["_source"]["response"]["remote_address"]["country"] == "中国" and res["hits"]["hits"][0]["_source"]["response"]["remote_address"]["prov"] not in ["中国香港", "中国台湾", "澳门特别行政区"]:
-            tags += ["in_mainland"]
-        else:
-            tags += ["not_in_mainland"]
-        if res["hits"]["hits"][0]["_source"]["classification"]["type"] in ["赌博", "色情"]:
-            tags += ["illegal"]
-        else:
-            tags += ["legal"]
+    if not tags:
+        tags = []
+    if remote_address_ip is not None and remote_address_ip != "" and res["hits"]["hits"][0]["_source"]["response"]["remote_address"]["country"] == "中国" and res["hits"]["hits"][0]["_source"]["response"]["remote_address"]["prov"] not in ["中国香港", "中国台湾", "澳门特别行政区"]:
+        tags += ["in_mainland"]
+    else:
+        tags += ["not_in_mainland"]
+    if res["hits"]["hits"][0]["_source"]["classification"]["type"] in ["赌博", "色情"]:
+        tags += ["illegal"]
+    else:
+        tags += ["legal"]
     update_data.update(
             {
                 "snapshot": res["hits"]["hits"][0]["_source"],

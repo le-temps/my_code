@@ -118,11 +118,11 @@ class ElasticsearchConn:
             },
             "aggs": {}
         }
-        for i, field in terms_fields:
+        for i, field in enumerate(terms_fields):
             query_body["aggs"][str(i)] = {"terms":{"field":field, "size":terms_size, "order":{"_count":"desc"}}}
         try:
             res = self.search(index, query_body)
-            return [e[key]["buckets"] for key in res["aggregations"]]
+            return [res["aggregations"][key]["buckets"] for key in res["aggregations"]]
         except Exception as e:
             logger.error(traceback.format_exc())
             logger.error(e)
