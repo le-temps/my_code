@@ -1,0 +1,46 @@
+PUT /squint_trend_daily_key_communication_infra
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "total" : {
+          "type" : "integer"
+        },
+        "dns_total" : {
+          "type" : "integer"
+        },
+        "dns_open" : {
+          "type" : "integer"
+        },
+        "dns_hidden" : {
+          "type" : "integer"
+        },
+        "dns_forwarding" : {
+          "type" : "integer"
+        },
+        "dns_recursive" : {
+          "type" : "integer"
+        },
+        "dns_morbid" : {
+          "type" : "integer"
+        },
+        "router" : {
+          "type" : "integer"
+        },
+        "parsed_date" : {
+          "type" : "date",
+          "format": "yyyyMMdd"
+        }
+      }
+    }
+}

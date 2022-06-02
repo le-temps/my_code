@@ -1,0 +1,34 @@
+PUT /squint_trend_monthly_asset
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "total" : {
+          "type" : "integer"
+        },
+        "main_domain" : {
+          "type" : "integer"
+        },
+        "icp" : {
+          "type" : "integer"
+        },
+        "psr" : {
+          "type" : "integer"
+        },
+        "parsed_month" : {
+          "type" : "date",
+          "format": "yyyyMM"
+        }
+      }
+    }
+}

@@ -27,7 +27,7 @@ def trim_important_result(object):
         return object
 
 IMPORTANT = {
-    "domain": ["domain", "icp.main_licence", "icp.unit_name", "psr.record_id", "psr.unit_name", "rr.A.ip", "certs.cert", "whois.registrant.organization", "web.http.title", "web.https.title"],
+    "domain": ["domain", "icp.service_licence", "icp.unit_name", "psr.record_id", "psr.unit_name", "rr.A.ip", "certs.cert", "whois.registrant.organization", "web.http.title", "web.https.title"],
     "ip": ["ip", "ports", "geo.country", "geo.prov", "geo.city", "geo.district", "domains.reverse_domains", "protocols.port", "protocols.protocol", "dns.type", "certs.cert"],
     "organization": ["organization", "info.business_status", "info.legal_person", "info.registered_capital", "info.province", "info.city", "info.district"],
     "cert": ["cert", "issuer", "subject", "subject_dn", "validity", "signature_algorithm.key_algorithm"]

@@ -1,0 +1,31 @@
+PUT /squint_trend_daily_active_ip
+{
+    "settings":{
+        "number_of_shards" : "12",
+        "number_of_replicas" : "0",
+        "analysis" : {
+          "analyzer" : {
+            "ik" : {
+              "tokenizer" : "ik_smart"
+            }
+          }
+        }
+    },
+    "mappings" : {
+      "properties" : {
+        "total" : {
+          "type" : "integer"
+        },
+        "service" : {
+          "type" : "integer"
+        },
+        "web_service" : {
+          "type" : "integer"
+        },
+        "parsed_date" : {
+          "type" : "date",
+          "format": "yyyyMMdd"
+        }
+      }
+    }
+}
