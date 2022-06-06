@@ -41,18 +41,6 @@ STATS = {
 
 router = APIRouter()
 
-def remove_object_field(object, field_name):
-    if type(object) is dict:
-        if field_name in object:
-            object.pop(field_name)
-        for key in object:
-            if type(object[key]) is dict or type(object[key]) is list:
-                remove_object_field(object[key], field_name)
-    elif type(object) is list:
-        for e in object:
-            if type(e) is dict or type(e) is list:
-                remove_object_field(e, field_name)
-    return object
 
 #### main_page
 class TrendResponse(BaseModel):
@@ -123,7 +111,7 @@ async def get_search(field: str, page: int, rows: int, input_data: SearchInput, 
             return SearchResponse(status=900, msg="Input data not correct.")
         res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + field, query_string=query_string, from_num=page * rows, size=rows, source=IMPORTANT[field])
         if len(res["hits"]["hits"]) > 0:
-            return SearchResponse(state=800, meta={"total": res["aggregations"]["count"]["value"]}, payload=[trim_important_result(remove_object_field(e["_source"], "insert_raw_table_timestamp")) for e in res["hits"]["hits"]])
+            return SearchResponse(state=800, meta={"total": res["aggregations"]["count"]["value"]}, payload=[trim_important_result(e["_source"]) for e in res["hits"]["hits"]])
         else:
             return SearchResponse(state=800, meta={"total":0}, payload={})
     except Exception as e:
@@ -189,7 +177,7 @@ def get_detail(type, value, response, token):
                 # organization_subdomain
                 domains_res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + "domain", query_string=" OR ".join([f"domain:{domain}" for domain in res["hits"]["hits"][0]["_source"]["domains"]]), from_num=0, size=10, source=IMPORTANT["domain"])
                 res["hits"]["hits"][0]["_source"]["domains"] = [trim_important_result(e["_source"]) for e in domains_res["hits"]["hits"]]
-            return DetailResponse(state=800, payload=remove_object_field(res["hits"]["hits"][0]["_source"], "insert_raw_table_timestamp"))
+            return DetailResponse(state=800, payload=res["hits"]["hits"][0]["_source"])
         else:
             return DetailResponse(state=800, payload={})
     except Exception as e:

@@ -3,6 +3,7 @@ from utils.config import settings
 from utils.logger import logger
 from utils.time import get_current_time_string, compare_time_string
 from utils.validator import valid_ip
+from utils.processor import replace_value_by_value
 
 IP_WIDE_TABLE_NAME = "squint_ip"
 IP_CHINA_DNS_TABLE_NAME = "china_dns_info"
@@ -24,8 +25,9 @@ def new_ip_wide_table_record():
         "tags":[]
     }
 
-def delete_name_dict(dict, name):
-    dict.pop(name)
+def delete_dict_fields(dict, names):
+    for name in names:
+        dict.pop(name)
     return dict
 
 def assamble_ip_update_data(ip, insert_raw_table_timestamp, exist_record):
@@ -43,7 +45,7 @@ def update_ip_port(ip, exist_record, tags):
         tags = []
     update_data.update(
             {
-                "ports": res["hits"]["hits"][0]["_source"]["ports"],
+                "ports": replace_value_by_value(res["hits"]["hits"][0]["_source"]["ports"], "", None),
                 "tags": tags
             }
         )
@@ -62,7 +64,7 @@ def update_ip_cert(ip, exist_record, tags):
         tags = []
     update_data.update(
             {
-                "cert_hash": cert_hash,
+                "cert_hash": replace_value_by_value(cert_hash, "", None),
                 "tags": tags
             }
         )
@@ -87,8 +89,8 @@ def update_ip_ptr(ip, exist_record, tags):
     update_data.update(
             {
                 "domains": {
-                    "ptr": ptr,
-                    "reverse_domains": reverse_domains
+                    "ptr": replace_value_by_value(ptr, "", None),
+                    "reverse_domains": replace_value_by_value(reverse_domains, "", None)
                 },
                 "tags": tags
             }
@@ -106,13 +108,13 @@ def update_ip_protocol(ip, exist_record, tags):
                                         top_hits_size=1,
                                         script_field="insert_raw_table_timestamp"
                                         )
-    protocols = [delete_name_dict(e[0]["_source"], "ip") for e in protocol_res]
+    protocols = [delete_dict_fields(e[0]["_source"], ["ip", "insert_raw_table_timestamp"]) for e in protocol_res]
     update_data = assamble_ip_update_data(ip, ports_res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
     if not tags:
         tags = []
     update_data.update(
             {
-                "protocols": protocols,
+                "protocols": replace_value_by_value(protocols, "", None),
                 "tags": tags
             }
         )
@@ -136,7 +138,10 @@ def update_ip_dns(ip, exist_record, tags):
     if dns_type:
         update_data.update(
                 {
-                    "dns": {"type": dns_type, "version": dns_version},
+                    "dns": {
+                        "type": replace_value_by_value(dns_type, "", None), 
+                        "version": replace_value_by_value(dns_version, "", None)
+                    },
                     "tags": tags
                 }
             )
@@ -159,7 +164,7 @@ def update_ip_geo(ip, exist_record, tags):
         tags = []
     update_data.update(
             {
-                "geo": {
+                "geo": replace_value_by_value({
                     "accuracy": ip_geo_res["hits"]["hits"][0]["_source"]["accuracy"],
                     "areacode": ip_geo_res["hits"]["hits"][0]["_source"]["areacode"],
                     "asnumber": ip_geo_res["hits"]["hits"][0]["_source"]["asnumber"],
@@ -174,7 +179,7 @@ def update_ip_geo(ip, exist_record, tags):
                     "lngwgs": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"][0]["lngwgs"],
                     "prov": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"][0]["prov"],
                     "radius": ip_geo_res["hits"]["hits"][0]["_source"]["multiAreas"][0]["radius"]
-                },
+                }, "", None),
                 "tags": tags
             }
         )

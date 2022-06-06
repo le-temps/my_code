@@ -3,6 +3,7 @@ from utils.logger import logger
 from service.db.elasticsearch import es
 from utils.config import settings
 from utils.time import get_current_time_string
+from utils.processor import replace_value_by_value
 
 ORGANIZATION_WIDE_TABLE_NAME = "squint_organization"
 
@@ -16,8 +17,9 @@ def new_organization_wide_table_record():
         "tags":[]
     }
 
-def delete_name_dict(dict, name):
-    dict.pop(name)
+def delete_dict_fields(dict, names):
+    for name in names:
+        dict.pop(name)
     return dict
 
 def assamble_organization_update_data(organization, insert_raw_table_timestamp, exist_record):
@@ -41,7 +43,7 @@ def update_organization_businessinfo(organization, exist_record, tags):
         tags += ["business_abnormal"]
     update_data.update(
             {
-                "info": delete_name_dict(res["hits"]["hits"][0]["_source"], "name"),
+                "info": replace_value_by_value(delete_dict_fields(res["hits"]["hits"][0]["_source"], ["name", "insert_raw_table_timestamp"]), "", None),
                 "tags": tags
             }
         )
@@ -56,7 +58,7 @@ def update_organization_domain(organization, exist_record, tags):
         tags = []
     update_data.update(
             {
-                "domains": res["hits"]["hits"][0]["_source"]["domains"],
+                "domains": replace_value_by_value(res["hits"]["hits"][0]["_source"]["domains"], "", None),
                 "tags": tags
             }
         )

@@ -3,6 +3,7 @@ from utils.logger import logger
 from service.db.elasticsearch import es
 from utils.config import settings
 from utils.time import get_current_time_string
+from utils.processor import replace_value_by_value
 
 DOMAIN_WIDE_TABLE_NAME = "squint_domain"
 CERT_WIDE_TABLE_NAME = "squint_cert"
@@ -24,8 +25,9 @@ def new_domain_wide_table_record():
         "tags":[]
     }
 
-def delete_name_dict(dict, name):
-    dict.pop(name)
+def delete_dict_fields(dict, names):
+    for name in names:
+        dict.pop(name)
     return dict
 
 def assamble_domain_update_data(domain, insert_raw_table_timestamp, exist_record):
@@ -46,7 +48,7 @@ def update_domain_cert(domain, exist_record, tags):
         tags = []
     update_data.update(
             {
-                "cert_hash": cert_hash,
+                "cert_hash": replace_value_by_value(cert_hash, "", None),
                 "tags": tags
             }
         )
@@ -62,7 +64,7 @@ def update_domain_icp(domain, exist_record, tags):
     tags += ["icp"]
     update_data.update(
             {
-                "icp": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
+                "icp": replace_value_by_value(delete_dict_fields(res["hits"]["hits"][0]["_source"], ["domain", "insert_raw_table_timestamp"]), "", None),
                 "tags": tags
             }
         )
@@ -78,7 +80,7 @@ def update_domain_psr(domain, exist_record, tags):
     tags += ["psr"]
     update_data.update(
             {
-                "psr": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
+                "psr": replace_value_by_value(delete_dict_fields(res["hits"]["hits"][0]["_source"], ["domain", "insert_raw_table_timestamp"]), "", None),
                 "tags": tags
             }
         )
@@ -89,13 +91,13 @@ def update_domain_rr(domain, exist_record, tags):
     if len(res["hits"]["hits"]) == 0:
         raise Exception(f"ERROR: domain_update cannot find record(type:domain_rr, domain:{domain})")
     for e in res["hits"]["hits"][0]["_source"]["A"]:
-        delete_name_dict(e, "id")
+        delete_dict_fields(e, ["id"])
     update_data = assamble_domain_update_data(domain, res["hits"]["hits"][0]["_source"]["insert_raw_table_timestamp"], exist_record)
     if not tags:
         tags = []
     update_data.update(
             {
-                "rr": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
+                "rr": replace_value_by_value(delete_dict_fields(res["hits"]["hits"][0]["_source"], ["domain", "insert_raw_table_timestamp"]), "", None),
                 "tags": tags
             }
         )
@@ -110,7 +112,7 @@ def update_domain_subdomain(domain, exist_record, tags):
         tags = []
     update_data.update(
             {
-                "subdomains": res["hits"]["hits"][0]["_source"]["subdomains"],
+                "subdomains": replace_value_by_value(res["hits"]["hits"][0]["_source"]["subdomains"], "", None),
                 "tags": tags
             }
         )
@@ -125,7 +127,7 @@ def update_domain_whois(domain, exist_record, tags):
         tags = []
     update_data.update(
             {
-                "whois": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
+                "whois": replace_value_by_value(delete_dict_fields(res["hits"]["hits"][0]["_source"], ["domain", "insert_raw_table_timestamp"]), "", None),
                 "tags": tags
             }
         )
@@ -148,7 +150,7 @@ def update_domain_web(domain, exist_record, tags):
         tags += ["access_failed"]
     update_data.update(
             {
-                "web": delete_name_dict(res["hits"]["hits"][0]["_source"], "domain"),
+                "web": replace_value_by_value(delete_dict_fields(res["hits"]["hits"][0]["_source"], ["domain", "insert_raw_table_timestamp"]), "", None),
                 "tags": tags
             }
         )
@@ -192,7 +194,7 @@ def update_domain_snapshot(domain, exist_record, tags):
         tags += ["legal"]
     update_data.update(
             {
-                "snapshot": res["hits"]["hits"][0]["_source"],
+                "snapshot": replace_value_by_value(delete_dict_fields(res["hits"]["hits"][0]["_source"], ["insert_raw_table_timestamp"]), "", None),
                 "tags": tags
             }
         )
