@@ -39,6 +39,25 @@ STATS = {
     "organization": ["info.business_status", "info.type", "info.industry"]
 }
 
+TRENDS = ["active_ip", "asset", "key_communication_infra"]
+TRENDS_SORT_ORDER_FIELD_NAME = {
+    "daily": "parsed_date",
+    "monthly": "parsed_month"
+}
+TRENDS_SIZE = {
+    "daily": "30",
+    "monthly": "12"
+}
+
+STATES = ["port", "protocol", "http_server", "https_server"]
+STATES_FIELDS = {
+    "port": "ports",
+    "protocol": "protocols.protocol",
+    "http_server": "web.http.server",
+    "https_server": "web.https.server"
+}
+
+
 router = APIRouter()
 
 
@@ -46,36 +65,59 @@ router = APIRouter()
 class TrendResponse(BaseModel):
     state: int
     meta: Optional[dict] = None
-    payload: Optional[dict] = None
+    payload: Optional[list] = None
     msg: Optional[str]
 
-#@router.post("/api/v1/trend/{field}", response_model=SearchResponse, tags=["wide_table"])
-#async def get_search(field: str, page: int, rows: int, input_data: SearchInput, response: Response, token: Optional[str]=Header(None)):
-#    if token != settings.service_auth.token:
-#        response.status_code=401
-#        return SearchResponse(state=903, msg="Authentication Failed")
-#    try:
-#        if input_data.filters:
-#            query_string = input_data.filters
-#        elif input_data.keyword:
-#            query_string = input_data.keyword
-#        else:
-#            query_string = "*"
-#        if page <= 0 or page >= 1000 or rows <= 0 or rows >= 1000:
-#            response.status_code=400
-#            return SearchResponse(status=900, msg="Input data not correct.")
-#        res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + field, query_string=query_string, from_num=page * rows, size=rows, source=IMPORTANT[field])
-#        if len(res["hits"]["hits"]) > 0:
-#            return SearchResponse(state=800, meta={"total": res["aggregations"]["count"]["value"]}, payload=[trim_important_result(remove_object_field(e["_source"], "insert_raw_table_timestamp")) for e in res["hits"]["hits"]])
-#        else:
-#            return SearchResponse(state=800, meta={"total":0}, payload={})
-#    except Exception as e:
-#        logger.error(traceback.format_exc())
-#        logger.error(e)
-#        response.status_code=500
-#        return SearchResponse(state=910, msg=str(e))
+class StateResponse(BaseModel):
+    state: int
+    meta: Optional[dict] = None
+    payload: Optional[list] = None
+    msg: Optional[str]
 
+@router.get("/api/v1/trend/{field}", response_model=TrendResponse, tags=["wide_table"])
+async def get_search(field: str, scale: str, response: Response, token: Optional[str]=Header(None)):
+    if token != settings.service_auth.token:
+        response.status_code=401
+        return TrendResponse(state=903, msg="Authentication Failed")
+    try:
+        if (field not in TRENDS) or (scale not in ["daily", "monthly"]):
+            response.status_code=400
+            return TrendResponse(status=900, msg="Input data not correct.")
+        res = es.search_latest_by_query_string(index=f"squint_trend_{scale}_{field}", query_string="*", timestamp_field=TRENDS_SORT_ORDER_FIELD_NAME[scale], size=TRENDS_SIZE[scale])
+        if len(res["hits"]["hits"]) > 0:
+            return TrendResponse(state=800, meta={"scale": scale}, payload=[e["_source"] for e in res["hits"]["hits"]])
+        else:
+            return TrendResponse(state=800, meta={"scale": scale}, payload=[])
+    except Exception as e:
+        logger.error(traceback.format_exc())
+        logger.error(e)
+        response.status_code=500
+        return TrendResponse(state=910, msg=str(e))
 
+@router.get("/api/v1/state/{field}", response_model=StateResponse, tags=["wide_table"])
+async def get_search(field: str, size: int, response: Response, token: Optional[str]=Header(None)):
+    if token != settings.service_auth.token:
+        response.status_code=401
+        return StateResponse(state=903, msg="Authentication Failed")
+    try:
+        if (field not in STATES) or size <= 0 or size >= 1000:
+            response.status_code=400
+            return StateResponse(status=900, msg="Input data not correct.")
+        if field in ["port", "protocol"]:
+            count = es.count_by_query_string(index=settings.elasticsearch.index_prefix + "ip", query_string="*")
+            terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + "ip", query_string="*", terms_fields=[STATES_FIELDS[field]], terms_size=size)
+        elif field in ["http_server", "https_server"]:
+            count = es.count_by_query_string(index=settings.elasticsearch.index_prefix + "domain", query_string="*")
+            terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + "domain", query_string="*", terms_fields=[STATES_FIELDS[field]], terms_size=size)
+        if len(terms_res) > 0:
+            return StateResponse(state=800, meta={"total": count, "size": size}, payload=terms_res)
+        else:
+            return StateResponse(state=800, meta={"total": count, "size": size}, payload=[])
+    except Exception as e:
+        logger.error(traceback.format_exc())
+        logger.error(e)
+        response.status_code=500
+        return StateResponse(state=910, msg=str(e))
 
 #### wide_table search
 class SearchInput(BaseModel):

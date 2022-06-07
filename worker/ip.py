@@ -45,7 +45,7 @@ def update_ip_port(ip, exist_record, tags):
         tags = []
     update_data.update(
             {
-                "ports": replace_value_by_value(res["hits"]["hits"][0]["_source"]["ports"], "", None),
+                "ports": replace_value_by_value(list(set(res["hits"]["hits"][0]["_source"]["ports"])), "", None),
                 "tags": tags
             }
         )

@@ -23,8 +23,7 @@ PUT /squint_trend_daily_active_ip
           "type" : "integer"
         },
         "parsed_date" : {
-          "type" : "date",
-          "format": "yyyyMMdd"
+          "type" : "keyword"
         }
       }
     }

@@ -33,5 +33,24 @@ def test_service_wide():
         res = requests.post("http://10.245.146.64:27000/api/v1/search/domain/stats?page=1&rows=10", headers=headers, json={"keyword": "*"})
         print(res.text)
 
+    # 4. trend
+    def squint_trend():
+        res = requests.get("http://10.245.146.64:27000/api/v1/trend/active_ip?scale=daily", headers=headers)
+        print(res.text)
+        res = requests.get("http://10.245.146.64:27000/api/v1/trend/asset?scale=daily", headers=headers)
+        print(res.text)
+        res = requests.get("http://10.245.146.64:27000/api/v1/trend/key_communication_infra?scale=monthly", headers=headers)
+        print(res.text)
+    
+    # 5. state
+    def squint_state():
+        res = requests.get("http://10.245.146.64:27000/api/v1/state/port?size=5", headers=headers)
+        print(res.text)
+        res = requests.get("http://10.245.146.64:27000/api/v1/state/protocol?size=10", headers=headers)
+        print(res.text)
+        res = requests.get("http://10.245.146.64:27000/api/v1/state/http_server?size=20", headers=headers)
+        print(res.text)
+
+
     #wide_table_search()
     wide_table_search_detail()

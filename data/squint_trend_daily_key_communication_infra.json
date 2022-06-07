@@ -38,8 +38,7 @@ PUT /squint_trend_daily_key_communication_infra
           "type" : "integer"
         },
         "parsed_date" : {
-          "type" : "date",
-          "format": "yyyyMMdd"
+          "type" : "keyword"
         }
       }
     }

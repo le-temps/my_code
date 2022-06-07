@@ -38,8 +38,7 @@ PUT /squint_trend_monthly_key_communication_infra
           "type" : "integer"
         },
         "parsed_month" : {
-          "type" : "date",
-          "format": "yyyyMM"
+          "type" : "keyword"
         }
       }
     }

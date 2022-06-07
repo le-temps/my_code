@@ -32,8 +32,8 @@ class ElasticsearchConn:
         else:
             return self.search(index=index, body={"from":from_num, "size":size, "query":{"query_string":{"query":query_string}}, "aggs":{"count":{"value_count":{"field":"_id"}}}})
 
-    def search_latest_by_query_string(self, index, query_string, timestamp_field):
-        return self.search(index=index, body={"size":1, "query":{"query_string":{"query":query_string}}, "sort":{timestamp_field:{"order":"desc"}}})
+    def search_latest_by_query_string(self, index, query_string, timestamp_field, size=1):
+        return self.search(index=index, body={"size":size, "query":{"query_string":{"query":query_string}}, "sort":{timestamp_field:{"order":"desc"}}})
 
     def count_by_query_string(self, index, query_string):
         return self.es.count(index=index, body={"query":{"query_string":{"query":query_string}}})["count"]
