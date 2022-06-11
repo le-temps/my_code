@@ -1,5 +1,4 @@
-PUT /squint_trend_monthly_key_communication_infra
-{
+PUT /squint_trend_daily_dns
     "settings":{
         "number_of_shards" : "12",
         "number_of_replicas" : "0",
@@ -16,28 +15,22 @@ PUT /squint_trend_monthly_key_communication_infra
         "total" : {
           "type" : "integer"
         },
-        "dns_total" : {
+        "open" : {
           "type" : "integer"
         },
-        "dns_open" : {
+        "hidden" : {
           "type" : "integer"
         },
-        "dns_hidden" : {
+        "forwarding" : {
           "type" : "integer"
         },
-        "dns_forwarding" : {
+        "recursive" : {
           "type" : "integer"
         },
-        "dns_recursive" : {
+        "morbid" : {
           "type" : "integer"
         },
-        "dns_morbid" : {
-          "type" : "integer"
-        },
-        "router" : {
-          "type" : "integer"
-        },
-        "parsed_month" : {
+        "datetime" : {
           "type" : "keyword"
         }
       }

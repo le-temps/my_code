@@ -1,4 +1,4 @@
-PUT /squint_trend_daily_active_ip
+PUT /squint_trend_daily_icp
 {
     "settings":{
         "number_of_shards" : "12",
@@ -16,10 +16,7 @@ PUT /squint_trend_daily_active_ip
         "total" : {
           "type" : "integer"
         },
-        "service" : {
-          "type" : "integer"
-        },
-        "web_service" : {
+        "icp" : {
           "type" : "integer"
         },
         "datetime" : {

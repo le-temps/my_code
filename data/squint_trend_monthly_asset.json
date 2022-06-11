@@ -16,16 +16,7 @@ PUT /squint_trend_monthly_asset
         "total" : {
           "type" : "integer"
         },
-        "main_domain" : {
-          "type" : "integer"
-        },
-        "icp" : {
-          "type" : "integer"
-        },
-        "psr" : {
-          "type" : "integer"
-        },
-        "parsed_month" : {
+        "datetime" : {
           "type" : "keyword"
         }
       }

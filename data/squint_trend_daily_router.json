@@ -1,4 +1,4 @@
-PUT /squint_trend_daily_active_ip
+PUT /squint_trend_daily_router
 {
     "settings":{
         "number_of_shards" : "12",
@@ -14,12 +14,6 @@ PUT /squint_trend_daily_active_ip
     "mappings" : {
       "properties" : {
         "total" : {
-          "type" : "integer"
-        },
-        "service" : {
-          "type" : "integer"
-        },
-        "web_service" : {
           "type" : "integer"
         },
         "datetime" : {

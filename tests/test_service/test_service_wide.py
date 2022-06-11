@@ -39,7 +39,13 @@ def test_service_wide():
         print(res.text)
         res = requests.get("http://10.245.146.64:27000/api/v1/trend/asset?scale=daily", headers=headers)
         print(res.text)
-        res = requests.get("http://10.245.146.64:27000/api/v1/trend/key_communication_infra?scale=monthly", headers=headers)
+        res = requests.get("http://10.245.146.64:27000/api/v1/trend/icp?scale=monthly", headers=headers)
+        print(res.text)
+        res = requests.get("http://10.245.146.64:27000/api/v1/trend/psr?scale=monthly", headers=headers)
+        print(res.text)
+        res = requests.get("http://10.245.146.64:27000/api/v1/trend/dns?scale=monthly", headers=headers)
+        print(res.text)
+        res = requests.get("http://10.245.146.64:27000/api/v1/trend/router?scale=monthly", headers=headers)
         print(res.text)
     
     # 5. state
@@ -53,4 +59,5 @@ def test_service_wide():
 
 
     #wide_table_search()
-    wide_table_search_detail()
+    squint_trend()
+    #squint_state()

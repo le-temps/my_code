@@ -39,11 +39,7 @@ STATS = {
     "organization": ["info.business_status", "info.type", "info.industry"]
 }
 
-TRENDS = ["active_ip", "asset", "key_communication_infra"]
-TRENDS_SORT_ORDER_FIELD_NAME = {
-    "daily": "parsed_date",
-    "monthly": "parsed_month"
-}
+TRENDS = ["active_ip", "asset", "icp", "psr", "dns", "router"]
 TRENDS_SIZE = {
     "daily": "30",
     "monthly": "12"
@@ -83,8 +79,10 @@ async def get_search(field: str, scale: str, response: Response, token: Optional
         if (field not in TRENDS) or (scale not in ["daily", "monthly"]):
             response.status_code=400
             return TrendResponse(status=900, msg="Input data not correct.")
-        res = es.search_latest_by_query_string(index=f"squint_trend_{scale}_{field}", query_string="*", timestamp_field=TRENDS_SORT_ORDER_FIELD_NAME[scale], size=TRENDS_SIZE[scale])
+        res = es.search_latest_by_query_string(index=f"squint_trend_{scale}_{field}", query_string="*", timestamp_field="datetime", size=TRENDS_SIZE[scale])
         if len(res["hits"]["hits"]) > 0:
+            if field in ["icp", "psr"]:  # icp, psr 趋势统计内容加上比例结果
+                [e["_source"].update({"ratio": e["_source"][field] / e["_source"]["total"]}) for e in res["hits"]["hits"]]
             return TrendResponse(state=800, meta={"scale": scale}, payload=[e["_source"] for e in res["hits"]["hits"]])
         else:
             return TrendResponse(state=800, meta={"scale": scale}, payload=[])
@@ -105,14 +103,15 @@ async def get_search(field: str, size: int, response: Response, token: Optional[
             return StateResponse(status=900, msg="Input data not correct.")
         if field in ["port", "protocol"]:
             count = es.count_by_query_string(index=settings.elasticsearch.index_prefix + "ip", query_string="*")
-            terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + "ip", query_string="*", terms_fields=[STATES_FIELDS[field]], terms_size=size)
+            terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + "ip", query_string="*", terms_fields=[STATES_FIELDS[field]], terms_size=size)[0]
         elif field in ["http_server", "https_server"]:
             count = es.count_by_query_string(index=settings.elasticsearch.index_prefix + "domain", query_string="*")
-            terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + "domain", query_string="*", terms_fields=[STATES_FIELDS[field]], terms_size=size)
+            terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + "domain", query_string="*", terms_fields=[STATES_FIELDS[field]], terms_size=size)[0]
         if len(terms_res) > 0:
-            return StateResponse(state=800, meta={"total": count, "size": size}, payload=terms_res)
+            [e.update({"ratio": e["doc_count"] / count}) for e in terms_res]
+            return StateResponse(state=800, meta={"size": size}, payload=terms_res)
         else:
-            return StateResponse(state=800, meta={"total": count, "size": size}, payload=[])
+            return StateResponse(state=800, meta={"size": size}, payload=[])
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(e)
