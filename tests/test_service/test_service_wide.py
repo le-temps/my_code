@@ -17,12 +17,12 @@ def test_service_wide():
 
     # 2. wide_table search
     def wide_table_search():
-        res = requests.post("http://10.245.146.64:27000/api/v1/search/organization?page=1&rows=10", headers=headers, json={"keyword": "*"})
+        #res = requests.post("http://10.245.146.64:27000/api/v1/search/organization?page=1&rows=10", headers=headers, json={"keyword": "*"})
+        #print(res.text)
+        res = requests.post("http://10.245.146.64:27000/api/v1/search/ip?page=1&rows=10", headers=headers, json={"keyword": "protocols:*"})
         print(res.text)
-        res = requests.post("http://10.245.146.64:27000/api/v1/search/ip?page=1&rows=10", headers=headers, json={"keyword": "*"})
-        print(res.text)
-        res = requests.post("http://10.245.146.64:27000/api/v1/search/domain?page=1&rows=10", headers=headers, json={"keyword": "*"})
-        print(res.text)
+        #res = requests.post("http://10.245.146.64:27000/api/v1/search/domain?page=1&rows=10", headers=headers, json={"keyword": "*"})
+        #print(res.text)
 
     # 3. wide_table search detail
     def wide_table_search_detail():
@@ -58,6 +58,6 @@ def test_service_wide():
         print(res.text)
 
 
-    #wide_table_search()
-    squint_trend()
+    wide_table_search()
+    #squint_trend()
     #squint_state()

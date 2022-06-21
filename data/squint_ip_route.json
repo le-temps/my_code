@@ -16,6 +16,9 @@ PUT /squint_ip_route
         "ip" : {
           "type" : "keyword"
         },
+        "from" : {
+          "type" : "keyword"
+        },
         "results" : {
           "properties" : {
             "ttl": {

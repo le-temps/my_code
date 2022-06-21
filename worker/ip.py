@@ -121,7 +121,9 @@ def update_ip_protocol(ip, exist_record, tags):
     return update_data
 
 def update_ip_dns(ip, exist_record, tags):
-    res = es.search_latest_by_query_string(IP_CHINA_DNS_TABLE_NAME, f"ip:{ip} AND parsed_date:{get_current_time_string('date', '%Y%m%d')}", "parsed_date")
+    if not tags:
+        tags = []
+    res = es.search_latest_by_query_string(IP_CHINA_DNS_TABLE_NAME, f"ip:{ip} AND parsed_date:{int(get_current_time_string('date', '%Y%m%d')) - 1}", "parsed_date")
     dns_type = []
     dns_version = ""
     if res["hits"]["hits"]:
@@ -133,8 +135,6 @@ def update_ip_dns(ip, exist_record, tags):
         if "version" in res["hits"]["hits"][0]["_source"]:
             dns_version = res["hits"]["hits"][0]["_source"]["version"].split("|")[0]
     update_data = assamble_ip_update_data(ip, get_current_time_string("time"), exist_record)
-    if not tags:
-        tags = []
     if dns_type:
         update_data.update(
                 {

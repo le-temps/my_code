@@ -11,26 +11,29 @@ from utils.time import get_current_time_string
 
 #### trim result
 def trim_important_result(object):
-    if type(object) is dict:
-        for key in object:
-            object[key] = trim_important_result(object[key])
-        return object
-    elif type(object) is list:
-        if type(object[0]) is dict:
-            key = list(object[0].keys())[0]
-            if key == "title":
-                object = [object[-1]]
-            return {key:list(set([e[key] for e in object]))}
-        else:
-            return object
-    else:
-        return object
+    #if type(object) is dict:
+    #    for key in object:
+    #        object[key] = trim_important_result(object[key])
+    #    return object
+    #elif type(object) is list:
+    #    if len(object) == 0:
+    #        return object
+        #if type(object[0]) is dict:
+        #    key = list(object[0].keys())[0]
+        #    if key == "title":
+        #        object = [object[-1]]
+        #    return {key:list(set([e[key] for e in object]))}
+    #    else:
+    #        return object
+    #else:
+    #    return object
+    return object
 
 IMPORTANT = {
-    "domain": ["domain", "icp.service_licence", "icp.unit_name", "psr.record_id", "psr.unit_name", "rr.A.ip", "certs.cert", "whois.registrant.organization", "web.http.title", "web.https.title"],
-    "ip": ["ip", "ports", "geo.country", "geo.prov", "geo.city", "geo.district", "domains.reverse_domains", "protocols.port", "protocols.protocol", "dns.type", "certs.cert"],
-    "organization": ["organization", "info.business_status", "info.legal_person", "info.registered_capital", "info.province", "info.city", "info.district"],
-    "cert": ["cert", "issuer", "subject", "subject_dn", "validity", "signature_algorithm.key_algorithm"]
+    "domain": ["domain", "icp.service_licence", "icp.unit_name", "icp.unit_type", "psr.record_id", "psr.unit_name", "psr.unit_type", "rr.A.ip", "rr.AAAA", "rr.CNAME", "cert_hash", "whois.registrant.organization", "whois.registry.creation_time", "whois.registry.updated_time", "whois.registry.expiration_time", "whois.domain_info.status", "web.http.title", "web.http.keywords", "web.http.status_code", "web.https.title", "web.https.keywords", "web.https.status_code", "snapshot.response.favicon.img_url", "snapshot.response.favicon.md5", "snapshot.classification.probability", "snapshot.classification.type"],
+    "ip": ["ip", "ports", "geo.asnumber", "geo.country", "geo.prov", "geo.city", "geo.district", "domains.ptr", "domains.reverse_domains", "protocols.protocol", "protocols.port", "dns.type", "cert_hash"],
+    "organization": ["organization", "info.business_status", "info.legal_person", "info.registered_capital", "info.type", "info.industry", "info.registration_address"],
+    "cert": ["cert", "issuer.common_name", "subject.common_name", "validity", "signature_algorithm.name"]
 }
 
 STATS = {
@@ -103,15 +106,15 @@ async def get_search(field: str, size: int, response: Response, token: Optional[
             return StateResponse(status=900, msg="Input data not correct.")
         if field in ["port", "protocol"]:
             count = es.count_by_query_string(index=settings.elasticsearch.index_prefix + "ip", query_string="*")
-            terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + "ip", query_string="*", terms_fields=[STATES_FIELDS[field]], terms_size=size)[0]
+            terms_res, terms_size = es.search_and_terms(index=settings.elasticsearch.index_prefix + "ip", query_string="*", terms_fields=[STATES_FIELDS[field]], terms_size=size)
         elif field in ["http_server", "https_server"]:
             count = es.count_by_query_string(index=settings.elasticsearch.index_prefix + "domain", query_string="*")
-            terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + "domain", query_string="*", terms_fields=[STATES_FIELDS[field]], terms_size=size)[0]
+            terms_res, terms_size = es.search_and_terms(index=settings.elasticsearch.index_prefix + "domain", query_string="*", terms_fields=[STATES_FIELDS[field]], terms_size=size)
         if len(terms_res) > 0:
-            [e.update({"ratio": e["doc_count"] / count}) for e in terms_res]
-            return StateResponse(state=800, meta={"size": size}, payload=terms_res)
+            [e.update({"ratio": e["doc_count"] / count}) for e in terms_res[0]]
+            return StateResponse(state=800, meta={"total": terms_size[0], "size": size}, payload=terms_res[0])
         else:
-            return StateResponse(state=800, meta={"size": size}, payload=[])
+            return StateResponse(state=800, meta={"total": 0, "size": size}, payload=[])
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(e)
@@ -147,14 +150,17 @@ async def get_search(field: str, page: int, rows: int, input_data: SearchInput, 
             query_string = input_data.keyword
         else:
             query_string = "*"
-        if page <= 0 or page >= 1000 or rows <= 0 or rows >= 1000:
-            response.status_code=400
-            return SearchResponse(status=900, msg="Input data not correct.")
+        # 限制返回的页数 总数不大于10000
+        if page * rows >= 10000:
+            page = 10000 // rows - 1
+            #response.status_code=400
+            #return SearchResponse(status=900, msg="Input data not correct.")
         res = es.search_by_query_string_with_from_size(index=settings.elasticsearch.index_prefix + field, query_string=query_string, from_num=page * rows, size=rows, source=IMPORTANT[field])
         if len(res["hits"]["hits"]) > 0:
-            return SearchResponse(state=800, meta={"total": res["aggregations"]["count"]["value"]}, payload=[trim_important_result(e["_source"]) for e in res["hits"]["hits"]])
+            #return SearchResponse(state=800, meta={"total": res["aggregations"]["count"]["value"]}, payload=[trim_important_result(e["_source"]) for e in res["hits"]["hits"]])
+            return SearchResponse(state=800, meta={"total": res["aggregations"]["count"]["value"]}, payload=[e["_source"] for e in res["hits"]["hits"]])
         else:
-            return SearchResponse(state=800, meta={"total":0}, payload={})
+            return SearchResponse(state=800, meta={"total":0}, payload=[])
     except Exception as e:
         logger.error(traceback.format_exc())
         logger.error(e)
@@ -175,7 +181,7 @@ async def get_search_stats(field: str, input_data: SearchInput, response: Respon
             query_string = "*"
         # domain stats 
         stats_results = {}
-        terms_res = es.search_and_terms(index=settings.elasticsearch.index_prefix + field, query_string=query_string, terms_fields=STATS[field], terms_size=10)
+        terms_res, terms_size = es.search_and_terms(index=settings.elasticsearch.index_prefix + field, query_string=query_string, terms_fields=STATS[field], terms_size=10)
         for i, key in enumerate(STATS[field]):
             stats_results[key] = terms_res[i]
         if len(terms_res) > 0:
