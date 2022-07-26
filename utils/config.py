@@ -1,4 +1,4 @@
-from dynaconf import Dynaconf, Validator
+from dynaconf import Dynaconf, Validator#编写配置文件
 
 settings = Dynaconf(
     envvar_prefix='squint_data',

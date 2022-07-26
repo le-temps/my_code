@@ -8,9 +8,10 @@ from utils.logger import logger
 class ElasticsearchConn:
 
     def __init__(self, url, auth):
-        self.es = Elasticsearch([url], http_auth=auth)
+        self.es = Elasticsearch([url], http_auth=auth)#建立连接
+        #http_auth参数里的auth包含了用户，密码以及端口
 
-    def get_instance(self):
+    def get_instance(self):#返回es对象
         return self.es
 
     def search(self, index, body):
@@ -18,7 +19,7 @@ class ElasticsearchConn:
             res = self.es.search(index=index, body=body)
             return res
         except Exception as e:
-            logger.error(traceback.format_exc())
+            logger.error(traceback.format_exc())#返回异常信息的字符串，可以用来把信息记录到log里;
             logger.error(e)
             raise
             return []
@@ -140,4 +141,4 @@ class ElasticsearchConn:
     def stats_by_query_string(self, index, query_string, fields, buckets):
         pass
 
-es = ElasticsearchConn(f"{settings.elasticsearch_auth.host}:{settings.elasticsearch_auth.port}", (f"{settings.elasticsearch_auth.user}", f"{settings.elasticsearch_auth.password}"))
+es = ElasticsearchConn(f"{settings.elasticsearch_auth.host}:{settings.elasticsearch_auth.port}", (f"{settings.elasticsearch_auth.user}", f"{settings.elasticsearch_auth.password}"))##主机，端口，用户，密码

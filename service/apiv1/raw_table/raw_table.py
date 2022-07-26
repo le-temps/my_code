@@ -3,14 +3,14 @@ import traceback
 from pydantic import BaseModel
 from typing import Dict, List, Optional
 import json
-
+#内部写入文件
 from service.db.elasticsearch import es
 from service.db.redis import redis_queue
 from utils.config import settings
 from utils.logger import logger
 from utils.time import get_current_time_string
 
-router = APIRouter()
+router = APIRouter()#定义router
 
 
 ##### raw_table insert
@@ -24,12 +24,12 @@ class InputResponse(BaseModel):
 
 
 def check_input_type(type):
-    if type in settings.raw_table.type:
+    if type in settings.raw_table.type:#如果是内部信息
         return True
     else:
         return False
 
-VALUE_NAME_MAPPING_DICT = {}
+VALUE_NAME_MAPPING_DICT = {}#值名对应map字典
 for i, e in enumerate(settings.raw_table.type):
     VALUE_NAME_MAPPING_DICT[e] = settings.raw_table.value_name[i]
 

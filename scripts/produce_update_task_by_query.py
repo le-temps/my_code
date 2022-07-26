@@ -11,7 +11,7 @@ VALUE_NAME_MAPPING_DICT = {}
 for i, e in enumerate(settings.raw_table.type):
     VALUE_NAME_MAPPING_DICT[e] = settings.raw_table.value_name[i]
 
-def get_task_value(data, value_name):
+def get_task_value(data, value_name):#检测task里的值
     try:
         value_names = value_name.split(".")
         for e in value_names:

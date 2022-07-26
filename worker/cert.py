@@ -7,13 +7,13 @@ from utils.config import settings
 from utils.logger import logger
 from utils.time import get_current_time_string
 
-CERT_WIDE_TABLE_NAME = "squint_cert"
+CERT_WIDE_TABLE_NAME = "squint_cert"##表名
 CERT_TYPE = ["cert_raw"]
 PARSER_VERSION = "1.0"
 
 def assamble_cert_data(raw, sha256):
     # TODO: LoadLibrary 初始化改进
-    LIB_CERTIFICATE_PEM_TO_JSON = cdll.LoadLibrary("./worker/certificate_entry_and_pem_to_json_v3.so")
+    LIB_CERTIFICATE_PEM_TO_JSON = cdll.LoadLibrary("./worker/certificate_entry_and_pem_to_json_v3.so")#动态链接库
     parseRaw = LIB_CERTIFICATE_PEM_TO_JSON.parseRaw
     parseRaw.argtype = c_char_p
     parseRaw.restype = c_char_p

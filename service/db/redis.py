@@ -9,14 +9,14 @@ from utils.time import get_current_time_string
 class RedisQueue:
 
     def __init__(self, host, port, password):
-        self.redis = redis.Redis(host=host, port=port, password=password)
+        self.redis = redis.Redis(host=host, port=port, password=password)#redis连接
         logger.info(f"Init Redis done, check_unfinished_task num: {self.check_unfinished_task(settings.redis.distributed_list_name, settings.redis.tasks_list_name)}")
 
     def __instance__(self):
         return self.redis
 
     def check_unfinished_task(self, src, dst):
-        _count = 0
+        _count = 0#供内部使用
         e = self.redis.rpop(src)
         while(e):
             _count += 1
